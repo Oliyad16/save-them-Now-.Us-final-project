@@ -8,7 +8,8 @@
       "Bash(move styles.css static\\ )",
       "Bash(python:*)",
       "Bash(curl:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": []
