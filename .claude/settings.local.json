@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(dir)",
+      "Bash(mkdir:*)",
+      "Bash(move:*)",
+      "Bash(move styles.css static\\ )",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

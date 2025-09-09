@@ -1,0 +1,51 @@
+[
+    {
+        "date": "July 29, 2024",
+        "status": "Suspicious CircumstancesActive",
+        "category": "Missing Adults",
+        "reportedMissing": "Reported Missing May 08, 2024",
+        "location": "Mountain View, California, USA"
+    },
+    {
+        "date": "June 17, 2024",
+        "status": "UrgentSuspicious CircumstancesActive",
+        "category": "Missing Children",
+        "reportedMissing": "Reported Missing November 21, 2022",
+        "location": "Cornelius, North Carolina, USA"
+    },
+    {
+        "date": "June 04, 2024",
+        "status": "UrgentUnknown MissingActive",
+        "category": "Missing Adults",
+        "reportedMissing": "Reported Missing May 20, 2023",
+        "location": "Prague, Nebraska, USA"
+    },
+    {
+        "date": "May 16, 2024",
+        "status": "UrgentEndangered AdultActive",
+        "category": "Missing Adults",
+        "reportedMissing": "Reported Missing January 24, 2021",
+        "location": "Rayville, Louisiana, USA"
+    },
+    {
+        "date": "April 28, 2024",
+        "status": "UrgentUnknown MissingActive",
+        "category": "Missing Adults",
+        "reportedMissing": "Reported Missing January 10, 2023",
+        "location": "Brookfield, Massachusetts, USA"
+    },
+    {
+        "date": "May 16, 2024",
+        "status": "Unknown MissingCold Case",
+        "category": "Missing Adults",
+        "reportedMissing": "Reported Missing May 15, 2022",
+        "location": "Seminole, Oklahoma, USA"
+    },
+    {
+        "date": "April 18, 2024",
+        "status": "UrgentUnknown MissingActive",
+        "category": "Missing Veterans",
+        "reportedMissing": "Reported Missing January 30, 2024",
+        "location": "Washburn, Maine, United States"
+    }
+]

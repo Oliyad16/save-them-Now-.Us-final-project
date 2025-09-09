@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Leaflet map styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content h3 {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.leaflet-popup-content p {
+  margin: 4px 0;
+  font-size: 0.9em;
+}
+
+/* Custom dot marker hover effects */
+.custom-dot-marker:hover .hover-dot {
+  transform: scale(1.3);
+  opacity: 1 !important;
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+}
+
+/* Tooltip styling */
+.leaflet-tooltip {
+  background: #1f2937 !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+.leaflet-tooltip-top:before {
+  border-top-color: #1f2937 !important;
+}
+
+/* Digital counter effects */
+.digital-display {
+  text-shadow: 
+    0 0 2px #ef4444,
+    0 0 4px #ef4444,
+    0 0 8px rgba(239, 68, 68, 0.3);
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
+  animation: flicker 3s infinite alternate;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+/* Additional digital styling */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+.digital-display {
+  font-family: 'Orbitron', 'Courier New', monospace;
+}
