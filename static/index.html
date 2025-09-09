@@ -79,6 +79,9 @@
                             <button class="tab-btn active" data-tab="demographics">Demographics</button>
                             <button class="tab-btn" data-tab="locations">Hot Spots</button>
                             <button class="tab-btn" data-tab="patterns">Patterns</button>
+                            <button class="tab-btn" data-tab="correlations">Correlations</button>
+                            <button class="tab-btn" data-tab="risk-model">Risk Model</button>
+                            <button class="tab-btn" data-tab="ai-insights">AI Insights</button>
                         </div>
                         <div class="analysis-content">
                             <div id="demographics-tab" class="tab-content active">
@@ -90,6 +93,14 @@
                                     <div class="analysis-item">
                                         <h4>Gender Distribution</h4>
                                         <div id="genderChart" class="chart-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Ethnicity Breakdown</h4>
+                                        <div id="ethnicityChart" class="chart-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Vulnerability Score</h4>
+                                        <div id="vulnerabilityScore" class="score-container">Loading...</div>
                                     </div>
                                 </div>
                             </div>
@@ -103,6 +114,14 @@
                                         <h4>State Distribution</h4>
                                         <div id="stateChart" class="chart-container">Loading...</div>
                                     </div>
+                                    <div class="analysis-item">
+                                        <h4>Risk Heat Map</h4>
+                                        <div id="riskHeatMap" class="chart-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Population Density Analysis</h4>
+                                        <div id="densityAnalysis" class="chart-container">Loading...</div>
+                                    </div>
                                 </div>
                             </div>
                             <div id="patterns-tab" class="tab-content">
@@ -112,11 +131,87 @@
                                         <div id="temporalChart" class="chart-container">Loading...</div>
                                     </div>
                                     <div class="analysis-item">
+                                        <h4>Seasonal Trends</h4>
+                                        <div id="seasonalChart" class="chart-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Time-Based Risk</h4>
+                                        <div id="timeRiskChart" class="chart-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
                                         <h4>Safety Insights</h4>
                                         <div id="safetyInsights" class="insights-container">Loading...</div>
                                     </div>
                                 </div>
                             </div>
+                            <div id="correlations-tab" class="tab-content">
+                                <div class="analysis-grid">
+                                    <div class="analysis-item">
+                                        <h4>Age × Location Analysis</h4>
+                                        <div id="ageLocationMatrix" class="matrix-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Gender × Ethnicity Patterns</h4>
+                                        <div id="genderEthnicityMatrix" class="matrix-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Time × Demographics</h4>
+                                        <div id="timeDemographicMatrix" class="matrix-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Correlation Insights</h4>
+                                        <div id="correlationInsights" class="insights-container">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="risk-model-tab" class="tab-content">
+                                <div class="analysis-grid">
+                                    <div class="analysis-item">
+                                        <h4>Risk Calculator</h4>
+                                        <div id="riskCalculator" class="calculator-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Vulnerability Index</h4>
+                                        <div id="vulnerabilityIndex" class="index-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Predictive Model</h4>
+                                        <div id="predictiveModel" class="model-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Risk Factors</h4>
+                                        <div id="riskFactors" class="factors-container">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ai-insights-tab" class="tab-content">
+                                <div class="analysis-grid">
+                                    <div class="analysis-item">
+                                        <h4>Anomaly Detection</h4>
+                                        <div id="anomalyDetection" class="anomaly-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Pattern Recognition</h4>
+                                        <div id="patternRecognition" class="pattern-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>AI Recommendations</h4>
+                                        <div id="aiRecommendations" class="recommendations-container">Loading...</div>
+                                    </div>
+                                    <div class="analysis-item">
+                                        <h4>Trend Forecasting</h4>
+                                        <div id="trendForecasting" class="forecast-container">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="export-container">
+                            <h4 style="margin-bottom: 0.75rem; color: #2c3e50; font-size: 1rem;">Export Analysis Data</h4>
+                            <button class="export-btn" onclick="exportAnalysisData('json')">📄 Export as JSON</button>
+                            <button class="export-btn" onclick="exportAnalysisData('csv')">📊 Export as CSV</button>
+                            <button class="export-btn" onclick="exportAnalysisReport()">📋 Export Report</button>
+                            <button class="export-btn" onclick="exportInsights()">💡 Export Insights</button>
                         </div>
                     </div>
 
