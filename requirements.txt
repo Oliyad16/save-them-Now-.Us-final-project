@@ -1,0 +1,20 @@
+# SaveThemNow.Jesus Missing Persons Data Pipeline Requirements
+
+# Core dependencies from existing Next.js project
+# (These are likely already installed via npm)
+
+# Python-specific dependencies for the data pipeline
+requests>=2.31.0
+beautifulsoup4>=4.13.0
+schedule>=1.2.0
+geopy>=2.4.0
+
+# Additional utilities
+python-dateutil>=2.8.2
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.23.0
+
+# Optional: For enhanced features
+# pandas>=2.0.0        # For advanced data analysis
+# numpy>=1.24.0        # For numerical operations  
+# aiohttp>=3.9.0       # For async HTTP requests
