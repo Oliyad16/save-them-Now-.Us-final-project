@@ -228,9 +228,9 @@ export async function GET(request: NextRequest) {
         }
         
         if (detailed) {
-          response.recent_alerts = status.recent_alerts || []
-          response.notification_statistics = status.notification_stats || {}
-          response.monitoring_config = status.monitoring_config || {}
+          (response as any).recent_alerts = status.recent_alerts || []
+          ;(response as any).notification_statistics = status.notification_stats || {}
+          ;(response as any).monitoring_config = status.monitoring_config || {}
         }
         
         return NextResponse.json(response)

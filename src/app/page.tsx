@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { MissingPerson } from '@/types/missing-person'
+import { BadgeShowcase } from '@/components/badges'
 
 // Dynamically import counter component
 const KidnappingCounter = dynamic(() => import('@/components/KidnappingCounter'), {
   ssr: false
 })
 
-// Dynamically import the map component to avoid SSR issues with leaflet
-const MissingPersonsMap = dynamic(() => import('@/components/MissingPersonsMap'), {
+// Dynamically import the enhanced map component to avoid SSR issues with leaflet
+const EnhancedMissingPersonsMap = dynamic(() => import('@/components/map/EnhancedMissingPersonsMap'), {
   ssr: false,
   loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg"></div>
 })
@@ -86,6 +87,9 @@ export default function Home() {
             <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
               AI Analysis
             </Link>
+            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
+              Dashboard
+            </Link>
           </nav>
         </div>
       </header>
@@ -139,9 +143,32 @@ export default function Home() {
           </div>
         ) : (
           <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-4">
-            <MissingPersonsMap persons={filteredPersons} />
+            <EnhancedMissingPersonsMap 
+              persons={filteredPersons} 
+              currentTier='champion'
+              onUpgrade={() => window.open('/pricing', '_blank')}
+            />
           </div>
         )}
+
+        <div className="mt-8">
+          <BadgeShowcase 
+            userStats={{
+              totalDonationAmount: 1500,
+              donationCount: 25,
+              engagementDays: 120,
+              aiInteractions: 45,
+              casesShared: 45,
+              referrals: 8,
+              specialActions: ['first_donation', 'share_milestone'],
+              joinDate: new Date('2024-01-01'),
+              lastActiveDate: new Date(),
+              streakDays: 30
+            }}
+            currentTier='champion'
+            onUpgrade={() => window.open('/pricing', '_blank')}
+          />
+        </div>
 
         <div className="mt-8 bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Recent Cases</h2>

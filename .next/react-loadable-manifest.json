@@ -12,11 +12,11 @@
       "static/chunks/_app-pages-browser_src_components_KidnappingCounter_tsx.js"
     ]
   },
-  "app\\page.tsx -> @/components/MissingPersonsMap": {
-    "id": "app\\page.tsx -> @/components/MissingPersonsMap",
+  "app\\page.tsx -> @/components/map/EnhancedMissingPersonsMap": {
+    "id": "app\\page.tsx -> @/components/map/EnhancedMissingPersonsMap",
     "files": [
-      "static/css/_app-pages-browser_src_components_MissingPersonsMap_tsx.css",
-      "static/chunks/_app-pages-browser_src_components_MissingPersonsMap_tsx.js"
+      "static/css/_app-pages-browser_src_components_map_EnhancedMissingPersonsMap_tsx.css",
+      "static/chunks/_app-pages-browser_src_components_map_EnhancedMissingPersonsMap_tsx.js"
     ]
   }
 }

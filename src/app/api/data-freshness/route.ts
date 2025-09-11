@@ -8,8 +8,8 @@ export async function GET() {
     const dbPath = path.join(process.cwd(), 'database', 'app.db')
     
     const now = new Date()
-    let csvStatus = { exists: false, age_hours: Infinity, status: 'missing' }
-    let dbStatus = { exists: false, age_hours: Infinity, status: 'missing' }
+    let csvStatus = { exists: false, age_hours: Infinity, status: 'missing', last_modified: '', size_bytes: 0 }
+    let dbStatus = { exists: false, age_hours: Infinity, status: 'missing', last_modified: '', size_bytes: 0 }
     
     // Check CSV file
     try {

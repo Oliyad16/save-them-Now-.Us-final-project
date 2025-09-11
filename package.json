@@ -17,7 +17,9 @@
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.2.0",
+    "clsx": "^2.1.1",
     "csv-parse": "^5.5.6",
+    "framer-motion": "^12.23.12",
     "ioredis": "^5.7.0",
     "leaflet": "^1.9.4",
     "next": "^14.2.32",
@@ -29,7 +31,8 @@
     "redis": "^5.8.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
-    "stripe": "^18.5.0"
+    "stripe": "^18.5.0",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
