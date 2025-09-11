@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const session = await getServerSession(authConfig)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }

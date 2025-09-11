@@ -11,7 +11,10 @@
       "WebSearch",
       "Bash(git remote add:*)",
       "Read(//e/wsl.localhost/Ubuntu/home/oliyad16/DeveloperOli/Save them now/.document/**)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,91 @@
+
+> savethemnow-jesus@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+ ⚠ Port 3002 is in use, trying 3003 instead.
+ ⚠ Port 3003 is in use, trying 3004 instead.
+ ⚠ Port 3004 is in use, trying 3005 instead.
+ ⚠ Port 3005 is in use, trying 3006 instead.
+ ⚠ Port 3006 is in use, trying 3007 instead.
+  ▲ Next.js 14.2.32
+  - Local:        http://localhost:3007
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1937ms
+ ○ Compiling / ...
+ ✓ Compiled / in 6.8s (1529 modules)
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <AnimatePresence>. See https://reactjs.org/link/warning-keys for more information.
+    at MotionDOMComponent (webpack-internal:///(ssr)/./node_modules/framer-motion/dist/es/motion/index.mjs:58:65)
+    at BadgeShowcase (webpack-internal:///(ssr)/./src/components/badges/BadgeShowcase.tsx:22:26)
+    at div
+    at main
+    at div
+    at Home (webpack-internal:///(ssr)/./src/app/page.tsx:47:96)
+    at ClientPageRoot (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/client-page.js:14:11)
+    at Lazy
+    at InnerLayoutRouter (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/layout-router.js:242:11)
+    at RedirectErrorBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/redirect-boundary.js:73:9)
+    at RedirectBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/redirect-boundary.js:81:11)
+    at NotFoundErrorBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/layout-router.js:347:11)
+    at ErrorBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/error-boundary.js:158:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at Lazy
+    at OuterLayoutRouter (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/layout-router.js:367:11)
+    at Lazy
+    at SessionProvider (webpack-internal:///(ssr)/./node_modules/next-auth/react/index.js:364:24)
+    at AuthSessionProvider (webpack-internal:///(ssr)/./src/components/SessionProvider.tsx:11:32)
+    at Lazy
+    at body
+    at html
+    at RedirectErrorBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/redirect-boundary.js:73:9)
+    at RedirectBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/redirect-boundary.js:81:11)
+    at ReactDevOverlay (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+    at HotReload (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:322:11)
+    at Router (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/app-router.js:202:11)
+    at ErrorBoundaryHandler (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/error-boundary.js:112:9)
+    at ErrorBoundary (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/error-boundary.js:158:11)
+    at AppRouter (webpack-internal:///(ssr)/./node_modules/next/dist/client/components/app-router.js:564:13)
+    at Lazy
+    at r6 (E:\Download\savethemnow.Jesus\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:39:19179)
+    at r6 (E:\Download\savethemnow.Jesus\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:39:19179)
+    at ServerInsertedHTMLProvider (E:\Download\savethemnow.Jesus\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:39:24963)
+ GET / 200 in 7221ms
+ ✓ Compiled in 731ms (761 modules)
+ GET / 200 in 86ms
+ ✓ Compiled /api/auth/[...nextauth] in 495ms (784 modules)
+ ✓ Compiled (1020 modules)
+ GET /api/missing-persons?limit=1500 200 in 1718ms
+ GET /api/missing-persons?limit=1500 200 in 253ms
+ GET /api/auth/session 200 in 2072ms
+ GET /api/auth/session 200 in 17ms
+ ○ Compiling /analysis ...
+ ✓ Compiled /analysis in 606ms (1775 modules)
+ GET /api/missing-persons?limit=1500 200 in 230ms
+ GET /api/missing-persons?limit=1500 200 in 199ms
+ ✓ Compiled /dashboard in 343ms (1783 modules)
+ ✓ Compiled /auth/signin in 302ms (1789 modules)
+ GET /api/auth/providers 200 in 61ms
+ GET /api/auth/signin?callbackUrl=%2Fdashboard 302 in 9ms
+ GET /auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3006%2Fdashboard 200 in 131ms
+ GET /api/auth/session 200 in 18ms
+ GET /api/auth/session 200 in 9ms
+ GET /api/auth/providers 200 in 13ms
+ GET /api/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3006%2Fdashboard 302 in 9ms
+ GET /auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3006%2Fdashboard 200 in 21ms
+ GET /api/auth/session 200 in 10ms
+ GET /api/auth/session 200 in 8ms
+ GET /api/missing-persons?limit=1500 200 in 225ms
+ GET /api/missing-persons?limit=1500 200 in 181ms
+ GET /api/missing-persons?limit=1500 200 in 168ms
+ GET /api/missing-persons?limit=1500 200 in 158ms
+ ○ Compiling /about ...
+ ✓ Compiled /about in 750ms (1513 modules)

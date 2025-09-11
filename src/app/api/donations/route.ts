@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const session = await getServerSession(authConfig)
-    const userId = session?.user?.id
+    const userId = session?.user?.email // Use email as user identifier
     const donorEmail = email || session?.user?.email
 
     if (!donorEmail) {
@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getDatabase()
+
+    // Check if Stripe is configured
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Payment processing is not configured' },
+        { status: 503 }
+      )
+    }
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -80,7 +88,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -101,13 +109,13 @@ export async function GET(request: NextRequest) {
       WHERE user_id = ? 
       ORDER BY created_at DESC 
       LIMIT ? OFFSET ?
-    `).all(session.user.id, limit, offset)
+    `).all(session.user.email, limit, offset)
 
     const total = db.prepare(`
       SELECT COUNT(*) as count, SUM(amount) as total_amount
       FROM donations 
       WHERE user_id = ?
-    `).get(session.user.id) as any
+    `).get(session.user.email) as any
 
     return NextResponse.json({
       donations,
@@ -145,7 +153,15 @@ export async function PUT(request: NextRequest) {
     }
 
     const session = await getServerSession(authConfig)
-    const userId = session?.user?.id
+    const userId = session?.user?.email
+
+    // Check if Stripe is configured
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Payment processing is not configured' },
+        { status: 503 }
+      )
+    }
 
     // Create checkout session for donation
     const checkoutSession = await stripe.checkout.sessions.create({
