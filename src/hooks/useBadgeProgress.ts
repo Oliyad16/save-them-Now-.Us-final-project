@@ -38,7 +38,6 @@ export interface BadgeProgressActions {
 
 // Mock user stats for development - replace with actual API calls
 const createMockUserStats = (userId: string): UserStats => ({
-  userId,
   totalDonationAmount: 0,
   donationCount: 0,
   engagementDays: 1,

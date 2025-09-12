@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { BadgeShowcase } from '@/components/badges'
 
 interface Subscription {
   tier: string
@@ -110,6 +111,20 @@ export default function Dashboard() {
     }
   }
 
+  // Generate user stats for badge system
+  const userStats = {
+    totalDonationAmount: donationSummary.totalDonated,
+    donationCount: donationSummary.totalDonations,
+    engagementDays: 120, // This would come from actual user engagement tracking
+    aiInteractions: 45, // This would come from actual AI interaction tracking
+    casesShared: 45, // This would come from actual sharing tracking
+    referrals: 8, // This would come from actual referral tracking
+    specialActions: ['first_donation', 'share_milestone'] as any[],
+    joinDate: new Date('2024-01-01'), // This would come from user creation date
+    lastActiveDate: new Date(),
+    streakDays: 30 // This would come from actual streak tracking
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -134,12 +149,24 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-white">Dashboard</h1>
             <p className="text-gray-300 mt-2">Welcome back, {session.user?.name || session.user?.email}</p>
           </div>
-          <nav className="flex gap-6">
+          <nav className="hidden md:flex gap-6">
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Home
             </Link>
             <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
               About
+            </Link>
+            <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
+              AI Analysis
+            </Link>
+            <Link href="/dashboard" className="text-white font-semibold">
+              Dashboard
+            </Link>
+            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
+              Profile
+            </Link>
+            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              Sign In
             </Link>
           </nav>
         </div>
@@ -151,6 +178,15 @@ export default function Dashboard() {
             {error}
           </div>
         )}
+
+        {/* Badge Showcase - Top Section */}
+        <div className="mb-8">
+          <BadgeShowcase 
+            userStats={userStats}
+            currentTier={(subscription?.tier as any) || 'free'}
+            onUpgrade={() => window.open('/pricing', '_blank')}
+          />
+        </div>
 
         {/* Account Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

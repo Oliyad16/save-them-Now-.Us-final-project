@@ -121,7 +121,7 @@ export function BadgeShowcase({
   return (
     <div className={cn('w-full space-y-6', className)}>
       {/* User Level & Stats */}
-      <Card variant="tier" tier={currentTier} glow>
+      <Card variant="tier" tier={currentTier as any} glow>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-3">

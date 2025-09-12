@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "sqlite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mokei/mcp-sqlite",
+        "E:\\Download\\savethemnow.Jesus\\database.sqlite"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y", 
+        "@modelcontextprotocol/server-filesystem",
+        "E:\\Download\\savethemnow.Jesus\\src",
+        "E:\\Download\\savethemnow.Jesus"
+      ]
+    },
+    "firebase-official": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firebase-tools@latest",
+        "experimental:mcp",
+        "--dir",
+        "E:\\Download\\savethemnow.Jesus"
+      ]
+    },
+    "firebase-community": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gannonh/firebase-mcp"
+      ],
+      "env": {
+        "FIREBASE_PROJECT_ID": "your-project-id"
+      }
+    }
+  }
+}

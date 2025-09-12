@@ -71,7 +71,7 @@ export default function SignUp() {
   }
 
   const handleGoogleSignUp = () => {
-    signIn('google', { callbackUrl: '/dashboard' })
+    signIn('google', { callbackUrl: '/profile' })
   }
 
   if (success) {

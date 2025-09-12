@@ -81,7 +81,7 @@ export async function hasPermission(userId: string | undefined, feature: string)
   const tier = await getUserTier(userId)
   const tierConfig = SUBSCRIPTION_TIERS[tier]
   
-  return tierConfig.features.includes(feature)
+  return (tierConfig.features as string[]).includes(feature)
 }
 
 // Check map access level
@@ -143,7 +143,7 @@ export async function requireAuth() {
 // Middleware to check specific tier
 export async function requireTier(requiredTier: keyof typeof SUBSCRIPTION_TIERS) {
   const session = await requireAuth()
-  const userTier = await getUserTier(session.user.id)
+  const userTier = await getUserTier(session.user?.email || undefined)
   
   const tierHierarchy = ['ANONYMOUS', 'FREE', 'SUPPORTER', 'ADVOCATE', 'GUARDIAN', 'HERO']
   const requiredLevel = tierHierarchy.indexOf(requiredTier)

@@ -89,7 +89,7 @@ export function UpgradePrompt({
   const UpgradeCard = ({ compact = false }) => (
     <Card 
       variant="tier" 
-      tier={suggestedTier}
+      tier={suggestedTier as any}
       glow
       className={cn(
         'relative overflow-hidden',
@@ -161,7 +161,7 @@ export function UpgradePrompt({
         <div className="space-y-3">
           <Button
             onClick={style === 'modal' ? handleUpgrade : () => setIsModalOpen(true)}
-            tier={suggestedTier}
+            tier={suggestedTier as any}
             variant="tier"
             size="lg"
             glow
@@ -192,7 +192,7 @@ export function UpgradePrompt({
         onClose={() => setIsModalOpen(false)}
         size="lg"
         variant="tier"
-        tier={suggestedTier}
+        tier={suggestedTier as any}
       >
         <ModalHeader>
           <ModalTitle>Upgrade to {suggestedTier} Plan</ModalTitle>
@@ -261,7 +261,7 @@ export function UpgradePrompt({
             onClose={() => setIsModalOpen(false)}
             size="lg"
             variant="tier"
-            tier={suggestedTier}
+            tier={suggestedTier as any}
           >
             <ModalHeader>
               <ModalTitle className="capitalize">{suggestedTier} Plan Benefits</ModalTitle>
@@ -300,7 +300,7 @@ export function UpgradePrompt({
                     </div>
                     <Button
                       onClick={handleUpgrade}
-                      tier={suggestedTier}
+                      tier={suggestedTier as any}
                       variant="tier"
                       size="lg"
                       glow

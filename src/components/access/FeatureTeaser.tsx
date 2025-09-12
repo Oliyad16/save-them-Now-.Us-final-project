@@ -69,7 +69,7 @@ export function FeatureTeaser({
             onClick={handleInteraction}
             whileHover={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
           >
-            <Card variant="tier" tier={requiredTier} className="max-w-sm mx-4">
+            <Card variant="tier" tier={requiredTier as any} className="max-w-sm mx-4">
               <CardContent className="p-6 text-center">
                 <motion.div
                   className={`w-12 h-12 mx-auto mb-4 rounded-full bg-tier-${requiredTier}/20 flex items-center justify-center`}
@@ -90,7 +90,7 @@ export function FeatureTeaser({
                     👁️ Preview ({maxInteractions - interactionCount} left)
                   </Button>
                 ) : (
-                  <Button tier={requiredTier} variant="tier" size="sm" glow>
+                  <Button tier={requiredTier as any} variant="tier" size="sm" glow>
                     Unlock Now
                   </Button>
                 )}
@@ -125,7 +125,7 @@ export function FeatureTeaser({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <Card variant="tier" tier={requiredTier} glow>
+          <Card variant="tier" tier={requiredTier as any} glow>
             <CardContent className="p-8 text-center max-w-md">
               <motion.div
                 className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-badge flex items-center justify-center"
@@ -141,7 +141,7 @@ export function FeatureTeaser({
               <div className="space-y-3">
                 <Button
                   onClick={() => setShowUpgrade(true)}
-                  tier={requiredTier}
+                  tier={requiredTier as any}
                   variant="tier"
                   size="lg"
                   glow
@@ -203,7 +203,7 @@ export function FeatureTeaser({
             
             <Button
               onClick={() => setShowUpgrade(true)}
-              tier={requiredTier}
+              tier={requiredTier as any}
               variant="tier"
               size="sm"
             >
@@ -250,7 +250,7 @@ export function FeatureTeaser({
             
             <Button
               onClick={() => setShowUpgrade(true)}
-              tier={requiredTier}
+              tier={requiredTier as any}
               variant="tier"
               size="sm"
             >

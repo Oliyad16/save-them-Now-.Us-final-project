@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
     let stripeCustomerId: string
     
     const existingCustomer = db.prepare(
-      'SELECT stripe_customer_id FROM subscriptions WHERE user_id = ? AND stripe_customer_id IS NOT NULL LIMIT 1'
-    ).get(session.user.id) as any
+      'SELECT stripe_customer_id FROM subscriptions WHERE user_email = ? AND stripe_customer_id IS NOT NULL LIMIT 1'
+    ).get(session.user.email) as any
 
     if (existingCustomer?.stripe_customer_id) {
       stripeCustomerId = existingCustomer.stripe_customer_id
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         email: session.user.email!,
         name: session.user.name || undefined,
         metadata: {
-          userId: session.user.id
+          userEmail: session.user.email
         }
       })
       stripeCustomerId = customer.id
@@ -66,14 +66,14 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: successUrl || `${process.env.SITE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: successUrl || `${process.env.SITE_URL}/profile?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${process.env.SITE_URL}/pricing`,
       metadata: {
-        userId: session.user.id,
+        userEmail: session.user.email,
       },
       subscription_data: {
         metadata: {
-          userId: session.user.id,
+          userEmail: session.user.email,
         },
       },
       allow_promotion_codes: true,

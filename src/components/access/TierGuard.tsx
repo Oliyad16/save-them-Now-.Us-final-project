@@ -91,7 +91,7 @@ export function TierGuard({
       >
         <Card 
           variant="tier" 
-          tier={requiredTier}
+          tier={requiredTier as any}
           className={cn(
             'text-center',
             showPreview ? 'max-w-sm mx-auto' : 'w-full'
@@ -164,7 +164,7 @@ export function TierGuard({
               >
                 <Button
                   onClick={upgradeAction}
-                  tier={requiredTier}
+                  tier={requiredTier as any}
                   variant="tier"
                   size="lg"
                   glow
