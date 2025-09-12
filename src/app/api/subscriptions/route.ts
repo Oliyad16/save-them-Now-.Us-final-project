@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       WHERE s.user_id = ? AND s.status = 'active'
       ORDER BY s.created_at DESC
       LIMIT 1
-    `).get(session.user.id) as any
+    `).get(session.user.email) as any
 
     if (!subscription) {
       // Return free tier information
@@ -85,7 +85,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest) {
       WHERE user_id = ? AND status = 'active'
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(session.user.id) as any
+    `).get(session.user.email) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -111,6 +111,12 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Cancel subscription at period end
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Payment processing not configured' },
+        { status: 503 }
+      )
+    }
     await stripe.subscriptions.update(subscription.stripe_subscription_id, {
       cancel_at_period_end: true
     })
@@ -140,7 +146,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -166,7 +172,7 @@ export async function PATCH(request: NextRequest) {
       WHERE user_id = ? AND status = 'active' AND cancel_at_period_end = 1
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(session.user.id) as any
+    `).get(session.user.email) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -176,6 +182,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Remove cancellation
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Payment processing not configured' },
+        { status: 503 }
+      )
+    }
     await stripe.subscriptions.update(subscription.stripe_subscription_id, {
       cancel_at_period_end: false
     })

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { MissingPerson } from '@/types/missing-person'
-import { BadgeShowcase } from '@/components/badges'
+import { MobileNavigation } from '@/components/mobile/MobileNavigation'
 
 // Dynamically import counter component
 const KidnappingCounter = dynamic(() => import('@/components/KidnappingCounter'), {
@@ -18,6 +19,7 @@ const EnhancedMissingPersonsMap = dynamic(() => import('@/components/map/Enhance
 })
 
 export default function Home() {
+  const { data: session } = useSession()
   const [missingPersons, setMissingPersons] = useState<MissingPerson[]>([])
   const [filteredPersons, setFilteredPersons] = useState<MissingPerson[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,7 +37,7 @@ export default function Home() {
 
   const loadMissingPersons = async () => {
     try {
-      const response = await fetch('/api/missing-persons?limit=1500')
+      const response = await fetch('/api/missing-persons?limit=9000')
       const result = await response.json()
       
       // Handle new API response format
@@ -71,13 +73,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <MobileNavigation 
+        currentTier="free"
+        isAuthenticated={!!session}
+        userName={session?.user?.name || session?.user?.email || undefined}
+        onUpgrade={() => window.open('/pricing', '_blank')}
+        onSignOut={() => window.location.href = '/api/auth/signout'}
+      />
       <header className="bg-gray-900 border-b border-gray-800 py-6">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-white">Missing Persons Awareness</h1>
             <p className="text-gray-300 mt-2">Helping locate missing persons across the United States</p>
           </div>
-          <nav className="flex gap-6">
+          <nav className="hidden md:flex gap-6">
             <Link href="/" className="text-white font-semibold">
               Home
             </Link>
@@ -89,6 +98,12 @@ export default function Home() {
             </Link>
             <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
               Dashboard
+            </Link>
+            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
+              Profile
+            </Link>
+            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              Sign In
             </Link>
           </nav>
         </div>
@@ -151,24 +166,6 @@ export default function Home() {
           </div>
         )}
 
-        <div className="mt-8">
-          <BadgeShowcase 
-            userStats={{
-              totalDonationAmount: 1500,
-              donationCount: 25,
-              engagementDays: 120,
-              aiInteractions: 45,
-              casesShared: 45,
-              referrals: 8,
-              specialActions: ['first_donation', 'share_milestone'],
-              joinDate: new Date('2024-01-01'),
-              lastActiveDate: new Date(),
-              streakDays: 30
-            }}
-            currentTier='champion'
-            onUpgrade={() => window.open('/pricing', '_blank')}
-          />
-        </div>
 
         <div className="mt-8 bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Recent Cases</h2>

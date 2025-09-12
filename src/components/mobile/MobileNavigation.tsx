@@ -19,7 +19,7 @@ interface MobileNavigationProps {
 
 const navigationItems = [
   { href: '/', label: 'Home', icon: '🏠' },
-  { href: '/dashboard', label: 'Dashboard', icon: '📊', authRequired: true },
+  { href: '/profile', label: 'Profile', icon: '👤', authRequired: true },
   { href: '/analysis', label: 'AI Analysis', icon: '🤖' },
   { href: '/about', label: 'About', icon: 'ℹ️' },
 ]

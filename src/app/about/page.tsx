@@ -8,7 +8,7 @@ export default function About() {
           <Link href="/" className="text-2xl font-bold text-white hover:text-gray-300 transition-colors">
             Missing Persons Awareness
           </Link>
-          <nav className="flex gap-6">
+          <nav className="hidden md:flex gap-6">
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Home
             </Link>
@@ -17,6 +17,15 @@ export default function About() {
             </Link>
             <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
               AI Analysis
+            </Link>
+            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
+              Dashboard
+            </Link>
+            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
+              Profile
+            </Link>
+            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              Sign In
             </Link>
           </nav>
         </div>

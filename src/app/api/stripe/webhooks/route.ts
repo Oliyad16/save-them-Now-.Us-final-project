@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  if (!stripe) {
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 503 }
+    )
+  }
+
   let event: Stripe.Event
 
   try {
@@ -100,6 +107,10 @@ async function handleSubscriptionCreated(
   }
 
   // Get subscription details from Stripe
+  if (!stripe) {
+    console.error('Stripe not configured')
+    return
+  }
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
   const priceId = subscription.items.data[0]?.price.id
 
@@ -125,8 +136,8 @@ async function handleSubscriptionCreated(
     subscriptionId,
     customerId,
     subscription.status,
-    new Date(subscription.current_period_start * 1000).toISOString(),
-    new Date(subscription.current_period_end * 1000).toISOString()
+    new Date((subscription as any).current_period_start * 1000).toISOString(),
+    new Date((subscription as any).current_period_end * 1000).toISOString()
   )
 
   // Update user tier
@@ -151,8 +162,8 @@ async function handleSubscriptionUpdate(
     WHERE stripe_subscription_id = ?
   `).run(
     subscription.status,
-    new Date(subscription.current_period_start * 1000).toISOString(),
-    new Date(subscription.current_period_end * 1000).toISOString(),
+    new Date((subscription as any).current_period_start * 1000).toISOString(),
+    new Date((subscription as any).current_period_end * 1000).toISOString(),
     subscription.cancel_at_period_end ? 1 : 0,
     subscriptionId
   )
@@ -190,8 +201,8 @@ async function handlePaymentSucceeded(
   invoice: Stripe.Invoice,
   db: any
 ) {
-  const subscriptionId = invoice.subscription as string
-  const customerId = invoice.customer as string
+  const subscriptionId = (invoice as any).subscription as string
+  const customerId = (invoice as any).customer as string
   
   // Record payment
   const userRecord = db.prepare(
@@ -205,11 +216,11 @@ async function handlePaymentSucceeded(
       ) VALUES (?, ?, ?, ?, ?, ?)
     `).run(
       userRecord.user_id,
-      invoice.payment_intent,
-      invoice.amount_paid / 100, // Convert cents to dollars
+      (invoice as any).payment_intent,
+      (invoice as any).amount_paid / 100, // Convert cents to dollars
       'subscription',
       'completed',
-      `Subscription payment for period ${new Date(invoice.period_start * 1000).toISOString().split('T')[0]} to ${new Date(invoice.period_end * 1000).toISOString().split('T')[0]}`
+      `Subscription payment for period ${new Date((invoice as any).period_start * 1000).toISOString().split('T')[0]} to ${new Date((invoice as any).period_end * 1000).toISOString().split('T')[0]}`
     )
   }
 
@@ -220,7 +231,7 @@ async function handlePaymentFailed(
   invoice: Stripe.Invoice,
   db: any
 ) {
-  const subscriptionId = invoice.subscription as string
+  const subscriptionId = (invoice as any).subscription as string
   
   // Record failed payment
   const userRecord = db.prepare(
@@ -234,11 +245,11 @@ async function handlePaymentFailed(
       ) VALUES (?, ?, ?, ?, ?, ?)
     `).run(
       userRecord.user_id,
-      invoice.payment_intent,
-      invoice.amount_due / 100,
+      (invoice as any).payment_intent,
+      (invoice as any).amount_due / 100,
       'subscription',
       'failed',
-      `Failed subscription payment for period ${new Date(invoice.period_start * 1000).toISOString().split('T')[0]} to ${new Date(invoice.period_end * 1000).toISOString().split('T')[0]}`
+      `Failed subscription payment for period ${new Date((invoice as any).period_start * 1000).toISOString().split('T')[0]} to ${new Date((invoice as any).period_end * 1000).toISOString().split('T')[0]}`
     )
 
     // Log activity

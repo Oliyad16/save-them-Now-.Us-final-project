@@ -14,7 +14,9 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(timeout 10 npm run dev)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

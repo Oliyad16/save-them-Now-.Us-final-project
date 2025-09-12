@@ -4,7 +4,7 @@ import { forwardRef, useEffect } from 'react'
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface ModalProps extends Omit<React.HTMLAttributes<HTMLDivElement>, keyof MotionProps> {
+interface ModalProps {
   isOpen: boolean
   onClose: () => void
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
@@ -12,10 +12,12 @@ interface ModalProps extends Omit<React.HTMLAttributes<HTMLDivElement>, keyof Mo
   tier?: 'free' | 'basic' | 'premium' | 'hero' | 'champion'
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
-  showCloseButton?: boolean
+  showCloseButton?: boolean | React.ReactNode
+  className?: string
+  children?: React.ReactNode
 }
 
-const Modal = forwardRef<HTMLDivElement, ModalProps & MotionProps>(
+const Modal = forwardRef<HTMLDivElement, ModalProps>(
   ({ 
     isOpen,
     onClose,
@@ -26,8 +28,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps & MotionProps>(
     closeOnEscape = true,
     showCloseButton = true,
     className,
-    children,
-    ...props 
+    children
   }, ref) => {
     const sizes = {
       sm: 'max-w-sm',
@@ -103,10 +104,9 @@ const Modal = forwardRef<HTMLDivElement, ModalProps & MotionProps>(
                 stiffness: 300, 
                 damping: 30 
               }}
-              {...props}
             >
               {/* Close Button */}
-              {showCloseButton && (
+              {showCloseButton && typeof showCloseButton === 'boolean' && (
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-mission-gray-800 hover:bg-mission-gray-700 text-mission-gray-400 hover:text-white transition-colors"

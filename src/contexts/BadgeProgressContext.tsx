@@ -124,12 +124,12 @@ export function useBadgeActions() {
     recordSpecialAction: (action: string) => actions.updateStats({ type: 'special_action', specialAction: action }),
     
     // Batch actions
-    recordMultipleActions: async (actions: Array<{
+    recordMultipleActions: async (actionsList: Array<{
       type: 'donation' | 'ai_interaction' | 'case_share' | 'referral' | 'special_action'
       value?: number
       specialAction?: string
     }>) => {
-      for (const action of actions) {
+      for (const action of actionsList) {
         await actions.updateStats(action)
       }
     }

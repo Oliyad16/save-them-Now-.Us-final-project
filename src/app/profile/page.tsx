@@ -26,7 +26,7 @@ interface Donation {
   anonymous: boolean
 }
 
-export default function Dashboard() {
+export default function Profile() {
   const { data: session, status } = useSession()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [donations, setDonations] = useState<Donation[]>([])
@@ -60,8 +60,8 @@ export default function Dashboard() {
       setDonationSummary(donationData.summary || { totalDonated: 0, totalDonations: 0 })
 
     } catch (err) {
-      setError('Failed to load dashboard data')
-      console.error('Dashboard error:', err)
+      setError('Failed to load profile data')
+      console.error('Profile error:', err)
     } finally {
       setLoading(false)
     }
@@ -130,7 +130,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Loading dashboard...</p>
+          <p>Loading profile...</p>
         </div>
       </div>
     )
@@ -146,7 +146,7 @@ export default function Dashboard() {
       <header className="bg-gray-900 border-b border-gray-800 py-6">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white">Profile</h1>
             <p className="text-gray-300 mt-2">Welcome back, {session.user?.name || session.user?.email}</p>
           </div>
           <nav className="hidden md:flex gap-6">
@@ -159,10 +159,10 @@ export default function Dashboard() {
             <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
               AI Analysis
             </Link>
-            <Link href="/dashboard" className="text-white font-semibold">
+            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
               Dashboard
             </Link>
-            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/profile" className="text-white font-semibold">
               Profile
             </Link>
             <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">

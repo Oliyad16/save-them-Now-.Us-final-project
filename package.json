@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@gannonh/firebase-mcp": "^1.4.9",
+    "@mokei/mcp-sqlite": "^0.4.0",
     "@stripe/stripe-js": "^7.9.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
@@ -19,6 +21,8 @@
     "better-sqlite3": "^12.2.0",
     "clsx": "^2.1.1",
     "csv-parse": "^5.5.6",
+    "firebase": "^12.2.1",
+    "firebase-admin": "^13.5.0",
     "framer-motion": "^12.23.12",
     "ioredis": "^5.7.0",
     "leaflet": "^1.9.4",
