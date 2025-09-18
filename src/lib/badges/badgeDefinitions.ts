@@ -1,7 +1,7 @@
 import { BadgeData } from '@/components/ui/Badge'
 
 export interface BadgeRequirement {
-  type: 'donation_amount' | 'donation_count' | 'engagement_days' | 'ai_interactions' | 'cases_shared' | 'referrals' | 'special_action'
+  type: 'donation_amount' | 'donation_count' | 'engagement_days' | 'ai_interactions' | 'cases_shared' | 'referrals' | 'special_action' | 'crisis_response_hours'
   value: number | string
   timeframe?: 'all_time' | 'monthly' | 'yearly'
 }
@@ -18,9 +18,9 @@ export interface BadgeDefinition extends Omit<BadgeData, 'unlocked' | 'progress'
 export const donationBadges: BadgeDefinition[] = [
   {
     id: 'guardian_angel',
-    name: 'Guardian Angel',
-    description: 'Made your first donation to help save lives',
-    icon: '👼',
+    name: 'Crisis Responder',
+    description: 'Made your first donation to fight the kidnapping crisis',
+    icon: '🚨',
     category: 'donation',
     tier: 1,
     requirement: '$5+ donation',
@@ -28,16 +28,16 @@ export const donationBadges: BadgeDefinition[] = [
     requirements: [
       { type: 'donation_amount', value: 5, timeframe: 'all_time' }
     ],
-    story: 'Every guardian angel starts with a single act of kindness. Your first donation shows you believe in our mission to bring missing persons home safely.',
-    benefits: ['Special guardian status', 'Donation history tracking', 'Thank you email'],
+    story: 'Every crisis fighter starts with a single action. Your first donation shows you\'re ready to use technology to battle child kidnapping and save lives.',
+    benefits: ['Crisis Responder status', 'Impact tracking dashboard', 'Crisis alerts'],
     rarity: 'common',
     points: 10
   },
   {
     id: 'hope_bringer',
-    name: 'Hope Bringer',
-    description: 'Donated $25+ to bring hope to families in need',
-    icon: '🕊️',
+    name: 'Search Coordinator',
+    description: 'Funded $25+ worth of AI-powered search technology',
+    icon: '🔍',
     category: 'donation',
     tier: 2,
     requirement: '$25+ donation',
@@ -45,16 +45,16 @@ export const donationBadges: BadgeDefinition[] = [
     requirements: [
       { type: 'donation_amount', value: 25, timeframe: 'all_time' }
     ],
-    story: 'Hope is powerful. Your generous contribution of $25+ helps fund advanced search technologies and brings hope to families searching for their loved ones.',
-    benefits: ['Hope Bringer status', 'Monthly impact reports', 'Early feature access'],
+    story: 'Technology saves lives. Your $25+ contribution powers AI searches that detect patterns human investigators miss, directly helping locate missing children.',
+    benefits: ['Search Coordinator status', 'AI search reports', 'Priority case alerts'],
     rarity: 'common',
     points: 25
   },
   {
     id: 'life_saver',
-    name: 'Life Saver',
-    description: 'Contributed $100+ to life-saving search efforts',
-    icon: '🛟',
+    name: 'Technology Warrior',
+    description: 'Powered $100+ in crisis-fighting technology systems',
+    icon: '⚔️',
     category: 'donation',
     tier: 3,
     requirement: '$100+ donation',
@@ -62,8 +62,8 @@ export const donationBadges: BadgeDefinition[] = [
     requirements: [
       { type: 'donation_amount', value: 100, timeframe: 'all_time' }
     ],
-    story: 'You are literally saving lives. Your $100+ contribution funds critical search operations, AI analysis tools, and emergency response systems.',
-    benefits: ['Life Saver recognition', 'Quarterly donor calls', 'Impact dashboard access'],
+    story: 'You are fighting with the most powerful weapon: technology. Your $100+ funds AI systems, rapid response networks, and detection algorithms that save children\'s lives.',
+    benefits: ['Technology Warrior status', 'Advanced system access', 'Crisis response coordination'],
     rarity: 'rare',
     points: 100
   },
@@ -107,9 +107,9 @@ export const donationBadges: BadgeDefinition[] = [
 export const engagementBadges: BadgeDefinition[] = [
   {
     id: 'case_detective',
-    name: 'Case Detective',
-    description: 'Used AI analysis 10+ times to investigate cases',
-    icon: '🔍',
+    name: 'Crisis Analyst',
+    description: 'Used AI systems 10+ times to analyze kidnapping patterns',
+    icon: '🤖',
     category: 'engagement',
     tier: 1,
     requirement: '10 AI interactions',
@@ -117,16 +117,16 @@ export const engagementBadges: BadgeDefinition[] = [
     requirements: [
       { type: 'ai_interactions', value: 10, timeframe: 'all_time' }
     ],
-    story: 'Every great detective starts with curiosity. Your 10+ AI interactions show you\'re actively investigating cases and seeking answers for missing persons.',
-    benefits: ['Detective status', 'AI interaction history', 'Advanced search tips'],
+    story: 'Data reveals truth. Your 10+ AI interactions show you\'re actively using technology to uncover kidnapping patterns and help law enforcement respond faster.',
+    benefits: ['Crisis Analyst status', 'AI pattern reports', 'Prediction algorithms access'],
     rarity: 'common',
     points: 15
   },
   {
     id: 'community_voice',
-    name: 'Community Voice',
-    description: 'Shared 5+ missing person cases to spread awareness',
-    icon: '📢',
+    name: 'Crisis Mobilizer',
+    description: 'Shared 5+ urgent cases to mobilize community response',
+    icon: '📡',
     category: 'engagement',
     tier: 1,
     requirement: '5 cases shared',
@@ -134,8 +134,8 @@ export const engagementBadges: BadgeDefinition[] = [
     requirements: [
       { type: 'cases_shared', value: 5, timeframe: 'all_time' }
     ],
-    story: 'Your voice matters in bringing people home. By sharing 5+ cases, you\'re amplifying awareness and potentially saving lives through community action.',
-    benefits: ['Community Voice status', 'Sharing analytics', 'Social media templates'],
+    story: 'Community coordination saves children. By sharing 5+ urgent cases, you\'re mobilizing rapid response networks and expanding the search radius exponentially.',
+    benefits: ['Crisis Mobilizer status', 'Community network access', 'Rapid alert system'],
     rarity: 'common',
     points: 20
   },
@@ -319,12 +319,68 @@ export const seasonalBadges: BadgeDefinition[] = [
   }
 ]
 
+// Crisis Fighter Badges - New category for crisis-specific achievements
+export const crisisFighterBadges: BadgeDefinition[] = [
+  {
+    id: 'rapid_responder',
+    name: 'Rapid Responder',
+    description: 'Responded to 5+ crisis alerts within 1 hour',
+    icon: '⚡',
+    category: 'special',
+    tier: 1,
+    requirement: '5+ rapid responses',
+    color: 'badge-responder',
+    requirements: [
+      { type: 'special_action', value: 'rapid_crisis_response_5' }
+    ],
+    story: 'Speed saves lives in crisis situations. Your rapid response to 5+ alerts shows you understand that the first hours are critical in missing child cases.',
+    benefits: ['Rapid Responder status', 'Priority alert notifications', 'Emergency response team access'],
+    rarity: 'rare',
+    points: 75
+  },
+  {
+    id: 'crisis_commander',
+    name: 'Crisis Commander',
+    description: 'Coordinated community response for 3+ critical cases',
+    icon: '🎖️',
+    category: 'special',
+    tier: 2,
+    requirement: 'Community coordination',
+    color: 'badge-hero',
+    requirements: [
+      { type: 'special_action', value: 'crisis_coordination_3' }
+    ],
+    story: 'Leadership in crisis defines heroes. Your coordination of community response for 3+ critical cases shows exceptional commitment to fighting child kidnapping.',
+    benefits: ['Crisis Commander status', 'Community leadership tools', 'Direct law enforcement contact'],
+    rarity: 'epic',
+    points: 200
+  },
+  {
+    id: 'ai_pioneer',
+    name: 'AI Pioneer',
+    description: 'First to use new AI detection algorithms for pattern analysis',
+    icon: '🧠',
+    category: 'special',
+    tier: 1,
+    requirement: 'Beta AI access',
+    color: 'badge-detective',
+    requirements: [
+      { type: 'special_action', value: 'ai_beta_pioneer' }
+    ],
+    story: 'Innovation drives progress. As an AI Pioneer, you helped test cutting-edge algorithms that detect kidnapping patterns and predict high-risk scenarios.',
+    benefits: ['AI Pioneer status', 'Beta feature access', 'Algorithm development input'],
+    rarity: 'legendary',
+    points: 150
+  }
+]
+
 // Combine all badges
 export const allBadges: BadgeDefinition[] = [
   ...donationBadges,
   ...engagementBadges,
   ...specialBadges,
-  ...seasonalBadges
+  ...seasonalBadges,
+  ...crisisFighterBadges
 ]
 
 // Badge lookup functions

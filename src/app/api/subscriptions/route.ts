@@ -18,7 +18,14 @@ export async function GET(request: NextRequest) {
 
     const db = getDatabase()
     
-    // Get current subscription with tier details
+    // Get user first, then subscription
+    const user = db.prepare('SELECT id, tier FROM users WHERE email = ?').get(session.user.email) as any
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get current subscription with tier details  
     const subscription = db.prepare(`
       SELECT 
         s.*,
@@ -26,27 +33,28 @@ export async function GET(request: NextRequest) {
         st.price_monthly,
         st.price_yearly,
         st.features,
-        st.ai_interactions_per_day,
+        st.ai_interactions_daily as ai_interactions_per_day,
         st.map_access_level
-      FROM subscriptions s
+      FROM user_subscriptions s
       JOIN subscription_tiers st ON s.tier_id = st.id
       WHERE s.user_id = ? AND s.status = 'active'
       ORDER BY s.created_at DESC
       LIMIT 1
-    `).get(session.user.email) as any
+    `).get(user.id) as any
 
     if (!subscription) {
-      // Return free tier information
-      const freeTier = db.prepare(
-        'SELECT * FROM subscription_tiers WHERE name = ?'
-      ).get('free') as any
+      // Use user's tier or default to free
+      const userTier = user.tier || 'free'
+      const tierInfo = db.prepare(
+        'SELECT * FROM subscription_tiers WHERE id = ?'
+      ).get(userTier) as any
 
       return NextResponse.json({
-        tier: 'free',
+        tier: userTier,
         status: 'active',
-        features: freeTier ? JSON.parse(freeTier.features) : {},
-        aiInteractionsPerDay: freeTier?.ai_interactions_per_day || 3,
-        mapAccessLevel: 'basic',
+        features: tierInfo ? JSON.parse(tierInfo.features) : ['account_dashboard'],
+        aiInteractionsPerDay: tierInfo?.ai_interactions_daily || 3,
+        mapAccessLevel: tierInfo?.map_access_level || 'basic',
         isActive: true
       })
     }
@@ -94,14 +102,20 @@ export async function DELETE(request: NextRequest) {
 
     const db = getDatabase()
     
+    // Get user first
+    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(session.user.email) as any
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     // Get current subscription
     const subscription = db.prepare(`
       SELECT stripe_subscription_id 
-      FROM subscriptions 
+      FROM user_subscriptions 
       WHERE user_id = ? AND status = 'active'
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(session.user.email) as any
+    `).get(user.id) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -123,7 +137,7 @@ export async function DELETE(request: NextRequest) {
 
     // Update local database
     db.prepare(`
-      UPDATE subscriptions 
+      UPDATE user_subscriptions 
       SET cancel_at_period_end = 1, updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ?
     `).run(subscription.stripe_subscription_id)
@@ -165,14 +179,20 @@ export async function PATCH(request: NextRequest) {
 
     const db = getDatabase()
     
+    // Get user first  
+    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(session.user.email) as any
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     // Get subscription that's set to cancel
     const subscription = db.prepare(`
       SELECT stripe_subscription_id 
-      FROM subscriptions 
+      FROM user_subscriptions 
       WHERE user_id = ? AND status = 'active' AND cancel_at_period_end = 1
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(session.user.email) as any
+    `).get(user.id) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -194,7 +214,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update local database
     db.prepare(`
-      UPDATE subscriptions 
+      UPDATE user_subscriptions 
       SET cancel_at_period_end = 0, updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ?
     `).run(subscription.stripe_subscription_id)

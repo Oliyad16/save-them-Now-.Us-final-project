@@ -274,16 +274,16 @@ export default function Profile() {
                   <li className="text-gray-300">
                     🤖 AI Interactions: {subscription.aiInteractionsPerDay === -1 ? 'Unlimited' : `${subscription.aiInteractionsPerDay}/day`}
                   </li>
-                  {subscription.features.no_ads && (
+                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('no_ads') && (
                     <li className="text-green-400">✅ Ad-free experience</li>
                   )}
-                  {subscription.features.priority_support && (
+                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('priority_support') && (
                     <li className="text-green-400">✅ Priority support</li>
                   )}
-                  {subscription.features.advanced_analytics && (
+                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('advanced_analytics') && (
                     <li className="text-green-400">✅ Advanced analytics</li>
                   )}
-                  {subscription.features.api_access && (
+                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('api_access') && (
                     <li className="text-green-400">✅ API access</li>
                   )}
                 </ul>

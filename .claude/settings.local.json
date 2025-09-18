@@ -1,22 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pip install:*)",
-      "Bash(dir)",
-      "Bash(mkdir:*)",
-      "Bash(move:*)",
-      "Bash(move styles.css static\\ )",
-      "Bash(python:*)",
-      "Bash(curl:*)",
-      "WebSearch",
-      "Bash(git remote add:*)",
-      "Read(//e/wsl.localhost/Ubuntu/home/oliyad16/DeveloperOli/Save them now/.document/**)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
-      "Bash(timeout 10 npm run dev)",
-      "Bash(npx tsc:*)",
-      "Bash(find:*)",
-      "Bash(git restore:*)"
+      "Read(//wsl.localhost/Ubuntu/home/oliyad16/DeveloperOli/Save them now/**)"
     ],
     "deny": [],
     "ask": []
