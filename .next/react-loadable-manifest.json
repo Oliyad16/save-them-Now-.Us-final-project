@@ -1,24 +1,15 @@
 {
-  "app\\analysis\\page.tsx -> @/components/RiskAnalysisMap": {
-    "id": 852,
-    "files": [
-      "static/css/fc1c9daac70c093b.css",
-      "static/chunks/d0deef33.bd75b11a952a2d3d.js",
-      "static/chunks/852.95b5a3afeb4ff8fc.js"
-    ]
-  },
   "app\\page.tsx -> @/components/KidnappingCounter": {
-    "id": 2025,
+    "id": "app\\page.tsx -> @/components/KidnappingCounter",
     "files": [
-      "static/chunks/340.df421823beab0a99.js"
+      "static/chunks/_app-pages-browser_src_components_KidnappingCounter_tsx.js"
     ]
   },
   "app\\page.tsx -> @/components/map/EnhancedMissingPersonsMap": {
-    "id": 567,
+    "id": "app\\page.tsx -> @/components/map/EnhancedMissingPersonsMap",
     "files": [
-      "static/css/fc1c9daac70c093b.css",
-      "static/chunks/d0deef33.bd75b11a952a2d3d.js",
-      "static/chunks/567.15809700a4999cdf.js"
+      "static/css/_app-pages-browser_src_components_map_EnhancedMissingPersonsMap_tsx.css",
+      "static/chunks/_app-pages-browser_src_components_map_EnhancedMissingPersonsMap_tsx.js"
     ]
   }
 }

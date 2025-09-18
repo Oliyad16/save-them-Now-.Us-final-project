@@ -1,26 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/about/page": "app/about/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/data-freshness/route": "app/api/data-freshness/route.js",
-  "/analysis/page": "app/analysis/page.js",
-  "/api/auth/register/route": "app/api/auth/register/route.js",
-  "/api/donations/route": "app/api/donations/route.js",
-  "/api/debug/route": "app/api/debug/route.js",
-  "/api/geocode/route": "app/api/geocode/route.js",
-  "/api/intelligent-scheduling/route": "app/api/intelligent-scheduling/route.js",
-  "/api/incremental-sync/route": "app/api/incremental-sync/route.js",
+  "/page": "app/page.js",
   "/api/missing-persons/route": "app/api/missing-persons/route.js",
-  "/api/monitoring-alerts/route": "app/api/monitoring-alerts/route.js",
-  "/api/missing-persons-enhanced/route": "app/api/missing-persons-enhanced/route.js",
-  "/api/stripe/create-subscription/route": "app/api/stripe/create-subscription/route.js",
-  "/api/scheduler-status/route": "app/api/scheduler-status/route.js",
-  "/api/stripe/webhooks/route": "app/api/stripe/webhooks/route.js",
-  "/api/subscriptions/route": "app/api/subscriptions/route.js",
-  "/api/trigger-update/route": "app/api/trigger-update/route.js",
-  "/auth/signin/page": "app/auth/signin/page.js",
-  "/auth/signup/page": "app/auth/signup/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/profile/page": "app/profile/page.js",
-  "/page": "app/page.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
 }
