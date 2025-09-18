@@ -87,13 +87,9 @@ export const authConfig: NextAuthOptions = {
     verifyRequest: '/auth/verify-request',
   },
 
-  events: {
-    async signIn({ user }) {
-      const db = getDatabase()
-      db.prepare(`
-        INSERT INTO user_activity (user_id, activity_type, activity_data) 
-        VALUES (?, 'sign_in', '{}')
-      `).run(user.id)
-    }
-  }
+  // events: {
+  //   async signIn({ user }) {
+  //     // Activity tracking disabled for now
+  //   }
+  // }
 }
