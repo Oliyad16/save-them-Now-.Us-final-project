@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//wsl.localhost/Ubuntu/home/oliyad16/DeveloperOli/Save them now/**)"
+      "Read(//wsl.localhost/Ubuntu/home/oliyad16/DeveloperOli/Save them now/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
