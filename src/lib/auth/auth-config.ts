@@ -65,8 +65,8 @@ export const authConfig: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session?.user && token) {
-        session.user.id = token.sub
-        session.user.tier = token.tier
+        session.user.id = token.sub || ''
+        session.user.tier = token.tier || 'free'
       }
       return session
     },
@@ -82,9 +82,7 @@ export const authConfig: NextAuthOptions = {
 
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
     error: '/auth/error',
-    verifyRequest: '/auth/verify-request',
   },
 
   // events: {

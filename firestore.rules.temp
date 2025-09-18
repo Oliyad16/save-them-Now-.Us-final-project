@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Missing persons data - TEMPORARY: allow public write for migration
+    match /missing_persons/{personId} {
+      // Allow anyone to read missing persons data (public awareness)
+      allow read: if true;
+
+      // TEMPORARY: Allow public writes for migration
+      allow write: if true;
+    }
+
+    // All other collections remain protected
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

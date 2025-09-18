@@ -37,15 +37,38 @@ export default function Home() {
 
   const loadMissingPersons = async () => {
     try {
-      const response = await fetch('/api/missing-persons?limit=9000')
+      // Option 1: Use API route (recommended for SSR and caching)
+      const response = await fetch('/api/missing-persons?limit=2000')
       const result = await response.json()
       
       // Handle new API response format
       const data = result.data || result
       setMissingPersons(data)
       setLoading(false)
+
+      // Option 2: Use Firestore directly (uncomment for direct access)
+      /*
+      const { FirestoreService } = await import('@/lib/firestore')
+      const result = await FirestoreService.getMissingPersons({ limitCount: 2000 })
+      setMissingPersons(result.data)
+      setLoading(false)
+      */
     } catch (error) {
       console.error('Error loading missing persons data:', error)
+      
+      // Fallback: try to load from CSV if Firestore fails
+      try {
+        const response = await fetch('/api/missing-persons-fallback')
+        if (response.ok) {
+          const result = await response.json()
+          const data = result.data || result
+          setMissingPersons(data.slice(0, 2000)) // Limit for performance
+          console.warn('Loaded data from CSV fallback')
+        }
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError)
+      }
+      
       setLoading(false)
     }
   }

@@ -56,7 +56,7 @@ export class BadgeSystem {
     const averageProgress = badge.requirements.length > 0 ? totalProgress / badge.requirements.length : 0
 
     return {
-      userId: userStats.userId || 'anonymous',
+      userId: 'anonymous', // UserStats doesn't include userId
       badgeId: badge.id,
       progress: Math.min(averageProgress, 100),
       unlocked,
