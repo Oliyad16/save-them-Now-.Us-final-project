@@ -1,5 +1,3 @@
 {
-  "/page": "app/page.js",
-  "/api/missing-persons/route": "app/api/missing-persons/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
+  "/api/missing-persons/route": "app/api/missing-persons/route.js"
 }

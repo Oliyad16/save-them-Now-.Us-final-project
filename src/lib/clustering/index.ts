@@ -486,9 +486,9 @@ export class AIClusteringService {
     const patterns: string[] = []
     
     // Age patterns
-    const ages = cluster.points.map(p => p.data.age).filter(Boolean)
+    const ages = cluster.points.map(p => p.data.age).filter((age): age is number => Boolean(age))
     if (ages.length > 0) {
-      const avgAge = ages.reduce((sum, age) => sum + age!, 0) / ages.length
+      const avgAge = ages.reduce((sum, age) => sum + age, 0) / ages.length
       if (avgAge < 18) patterns.push('Youth concentration')
       else if (avgAge > 65) patterns.push('Elderly concentration')
     }
