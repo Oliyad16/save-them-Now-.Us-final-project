@@ -36,11 +36,9 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "stripe": "^18.5.0",
-    "tailwind-merge": "^3.3.1",
-    "uuid": "^13.0.0"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^5.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
