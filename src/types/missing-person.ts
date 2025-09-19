@@ -1,5 +1,5 @@
 export interface MissingPerson {
-  id: string | number
+  id: number
   name: string
   date: string
   status: string
@@ -15,17 +15,4 @@ export interface MissingPerson {
   circumstances?: string
   photo?: string
   caseNumber?: string
-  // Firestore-specific fields
-  city?: string
-  state?: string
-  county?: string
-  legalFirstName?: string
-  legalLastName?: string
-  biologicalSex?: string
-  raceEthnicity?: string
-  missingAge?: string
-  dateModified?: string
-  dateMissing?: string
-  createdAt?: Date | any
-  updatedAt?: Date | any
 }
