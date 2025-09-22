@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authConfig } from '@/lib/auth/auth-config'
 import { stripe } from '@/lib/stripe/config'
+import { donationsService } from '@/lib/firestore/services'
 import { getDatabase } from '@/lib/database/connection'
 
 // Create donation payment intent
@@ -54,23 +55,41 @@ export async function POST(request: NextRequest) {
     })
 
     // Store donation record (pending until payment succeeds)
-    const donationId = db.prepare(`
-      INSERT INTO donations (
-        user_id, email, amount, donation_type, anonymous, message, stripe_payment_intent_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      userId || null,
-      donorEmail,
-      amount,
-      donationType || 'general',
-      anonymous ? 1 : 0,
-      message || null,
-      paymentIntent.id
-    ).lastInsertRowid
+    let donationRecord
+    try {
+      // Try Firestore first
+      donationRecord = await donationsService.create({
+        userId: userId || undefined,
+        email: donorEmail,
+        amount,
+        donationType: donationType || 'general',
+        anonymous: !!anonymous,
+        message: message || undefined,
+        stripePaymentIntentId: paymentIntent.id
+      })
+    } catch (firestoreError: any) {
+      console.warn('Firestore failed, using SQLite fallback:', firestoreError.message)
+      // Fallback to SQLite
+      const db = getDatabase()
+      const result = db.prepare(`
+        INSERT INTO donations (
+          user_id, email, amount, donation_type, anonymous, message, stripe_payment_intent_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        userId || null,
+        donorEmail,
+        amount,
+        donationType || 'general',
+        anonymous ? 1 : 0,
+        message || null,
+        paymentIntent.id
+      )
+      donationRecord = { id: result.lastInsertRowid }
+    }
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
-      donationId,
+      donationId: donationRecord.id,
       amount: amount
     })
 
@@ -99,24 +118,44 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 100)
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const db = getDatabase()
-    
-    // For now, return empty donations until schema is fixed
-    const donations: any[] = []
-    const total = { count: 0, total_amount: 0 }
+    try {
+      // Try Firestore first
+      const result = await donationsService.getByUserId(session.user.email, { limit, offset })
+      return NextResponse.json(result)
+    } catch (firestoreError: any) {
+      console.warn('Firestore failed, using SQLite fallback:', firestoreError.message)
+      // Fallback to SQLite
+      const db = getDatabase()
+      
+      const donations = db.prepare(`
+        SELECT 
+          id, amount, currency, donation_type, message, anonymous,
+          receipt_sent, tax_receipt_id, created_at
+        FROM donations 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT ? OFFSET ?
+      `).all(session.user.email, limit, offset)
 
-    return NextResponse.json({
-      donations,
-      pagination: {
-        limit,
-        offset,
-        total: total.count || 0
-      },
-      summary: {
-        totalDonated: total.total_amount || 0,
-        totalDonations: total.count || 0
-      }
-    })
+      const total = db.prepare(`
+        SELECT COUNT(*) as count, SUM(amount) as total_amount
+        FROM donations 
+        WHERE user_id = ?
+      `).get(session.user.email) as any
+
+      return NextResponse.json({
+        donations,
+        pagination: {
+          limit,
+          offset,
+          total: total.count || 0
+        },
+        summary: {
+          totalDonated: total.total_amount || 0,
+          totalDonations: total.count || 0
+        }
+      })
+    }
 
   } catch (error) {
     console.error('Error fetching donations:', error)

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { MissingPerson } from '@/types/missing-person'
+import { BadgeShowcase } from '@/components/badges'
 
 interface Subscription {
   tier: string
@@ -26,25 +26,6 @@ interface Donation {
   anonymous: boolean
 }
 
-interface CrisisData {
-  nearbyMissingChildren: MissingPerson[]
-  recentCases: MissingPerson[]
-  criticalCases: MissingPerson[]
-  locationStats: {
-    city: string
-    state: string
-    totalMissing: number
-    children: number
-    recentlyReported: number
-  }
-  userLocation: {
-    latitude: number
-    longitude: number
-    city: string
-    state: string
-  } | null
-}
-
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
@@ -52,8 +33,6 @@ export default function Dashboard() {
   const [donationSummary, setDonationSummary] = useState({ totalDonated: 0, totalDonations: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [crisisData, setCrisisData] = useState<CrisisData | null>(null)
-  const [locationPermission, setLocationPermission] = useState<'pending' | 'granted' | 'denied'>('pending')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -63,28 +42,7 @@ export default function Dashboard() {
     }
 
     fetchUserData()
-    requestLocationAccess()
   }, [session, status])
-
-  const requestLocationAccess = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocationPermission('granted')
-          fetchCrisisData(position.coords.latitude, position.coords.longitude)
-        },
-        (error) => {
-          console.warn('Location access denied:', error)
-          setLocationPermission('denied')
-          // Fetch general crisis data without location
-          fetchCrisisData()
-        }
-      )
-    } else {
-      setLocationPermission('denied')
-      fetchCrisisData()
-    }
-  }
 
   const fetchUserData = async () => {
     try {
@@ -107,104 +65,6 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const fetchCrisisData = async (userLat?: number, userLon?: number) => {
-    try {
-      // Fetch all missing persons data
-      const response = await fetch('/api/missing-persons?limit=10000')
-      const result = await response.json()
-      const allMissingPersons: MissingPerson[] = result.data || result
-
-      let userLocation = null
-      let nearbyMissingChildren: MissingPerson[] = []
-      let locationStats = {
-        city: 'Unknown',
-        state: 'US',
-        totalMissing: 0,
-        children: 0,
-        recentlyReported: 0
-      }
-
-      if (userLat && userLon) {
-        // Reverse geocode user location
-        try {
-          const geoResponse = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLat}&longitude=${userLon}&localityLanguage=en`)
-          const geoData = await geoResponse.json()
-          userLocation = {
-            latitude: userLat,
-            longitude: userLon,
-            city: geoData.city || geoData.locality || 'Unknown',
-            state: geoData.principalSubdivision || 'Unknown'
-          }
-
-          // Find missing persons within 100 miles of user
-          nearbyMissingChildren = allMissingPersons.filter(person => {
-            if (!person.latitude || !person.longitude || !person.age) return false
-            
-            const distance = calculateDistance(userLat, userLon, person.latitude, person.longitude)
-            return distance <= 100 && person.age < 18 // Within 100 miles and under 18
-          })
-
-          // Calculate local statistics
-          const stateMatches = allMissingPersons.filter(person => 
-            person.location.toLowerCase().includes(userLocation!.state.toLowerCase())
-          )
-          
-          locationStats = {
-            city: userLocation.city,
-            state: userLocation.state,
-            totalMissing: stateMatches.length,
-            children: stateMatches.filter(person => person.age && person.age < 18).length,
-            recentlyReported: stateMatches.filter(person => {
-              // Consider cases from the last 30 days as recent
-              const reportDate = new Date(person.date)
-              const thirtyDaysAgo = new Date()
-              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-              return reportDate > thirtyDaysAgo
-            }).length
-          }
-        } catch (geoError) {
-          console.error('Geocoding error:', geoError)
-        }
-      }
-
-      // Get recent cases (last 7 days)
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-      const recentCases = allMissingPersons.filter(person => {
-        const reportDate = new Date(person.date)
-        return reportDate > sevenDaysAgo
-      }).slice(0, 10)
-
-      // Get critical cases (children under 12)
-      const criticalCases = allMissingPersons.filter(person => 
-        person.age && person.age < 12
-      ).slice(0, 5)
-
-      setCrisisData({
-        nearbyMissingChildren,
-        recentCases,
-        criticalCases,
-        locationStats,
-        userLocation
-      })
-
-    } catch (err) {
-      console.error('Error fetching crisis data:', err)
-    }
-  }
-
-  // Calculate distance between two coordinates in miles
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 3959 // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180
-    const dLon = (lon2 - lon1) * Math.PI / 180
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-    return R * c
   }
 
   const handleCancelSubscription = async () => {
@@ -251,22 +111,19 @@ export default function Dashboard() {
     }
   }
 
-  // Calculate real crisis-fighting impact based on actual donations
-  const calculateCrisisFightingImpact = () => {
-    const aiSearchesFunded = Math.floor(donationSummary.totalDonated / 0.50) // $0.50 per AI search
-    const alertsSent = Math.floor(donationSummary.totalDonated / 2.0) // $2 per alert
-    const casesAnalyzed = Math.min(100, Math.floor(donationSummary.totalDonated / 1.0)) // $1 per case analysis
-    const crisisResponseHours = Math.floor(donationSummary.totalDonated / 5.0) // $5 per hour of response time
-    
-    return {
-      aiSearchesFunded,
-      alertsSent,
-      casesAnalyzed,
-      crisisResponseHours
-    }
+  // Generate user stats for badge system
+  const userStats = {
+    totalDonationAmount: donationSummary.totalDonated,
+    donationCount: donationSummary.totalDonations,
+    engagementDays: 120, // This would come from actual user engagement tracking
+    aiInteractions: 45, // This would come from actual AI interaction tracking
+    casesShared: 45, // This would come from actual sharing tracking
+    referrals: 8, // This would come from actual referral tracking
+    specialActions: ['first_donation', 'share_milestone'] as any[],
+    joinDate: new Date('2024-01-01'), // This would come from user creation date
+    lastActiveDate: new Date(),
+    streakDays: 30 // This would come from actual streak tracking
   }
-
-  const crisisImpact = calculateCrisisFightingImpact()
 
   if (status === 'loading' || loading) {
     return (
@@ -285,38 +142,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Real Crisis Data Header */}
+      {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 py-6">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">Crisis Response Center</h1>
-            <div className="mt-2 space-y-1">
-              {crisisData?.userLocation ? (
-                <p className="text-blue-400 font-semibold">
-                  📍 Your Location: {crisisData.userLocation.city}, {crisisData.userLocation.state}
-                </p>
-              ) : locationPermission === 'pending' ? (
-                <p className="text-yellow-400 text-sm">
-                  🔄 Getting your location for local crisis data...
-                </p>
-              ) : (
-                <p className="text-gray-400 text-sm">
-                  📍 Location access needed for local crisis alerts
-                  <button 
-                    onClick={requestLocationAccess}
-                    className="ml-2 underline hover:text-white"
-                  >
-                    Enable Location
-                  </button>
-                </p>
-              )}
-              <p className="text-gray-300">
-                Welcome back, {session.user?.name || session.user?.email}
-              </p>
-              <p className="text-red-400 text-sm">
-                🚨 Real-time crisis monitoring active
-              </p>
-            </div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-gray-300 mt-2">Welcome back, {session.user?.name || session.user?.email}</p>
           </div>
           <nav className="hidden md:flex gap-6">
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
@@ -348,260 +179,57 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Real Local Crisis Alert Bar */}
-        {crisisData && (
-          <div className="bg-gradient-to-r from-red-900/40 to-red-800/40 border border-red-700 rounded-lg p-4 mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="text-red-400">
-                  <span className="text-2xl font-bold">{crisisData.nearbyMissingChildren.length}</span>
-                  <span className="text-sm ml-2">missing children within 100 miles of you</span>
-                </div>
-                {crisisData.criticalCases.length > 0 && (
-                  <div className="text-yellow-500 text-sm">
-                    {crisisData.criticalCases.length} critical cases (children under 12)
-                  </div>
-                )}
+        {/* Badge Showcase - Top Section */}
+        <div className="mb-8">
+          <BadgeShowcase 
+            userStats={userStats}
+            currentTier={(subscription?.tier as any) || 'free'}
+            onUpgrade={() => window.open('/pricing', '_blank')}
+          />
+        </div>
+
+        {/* Account Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Account Information</h2>
+            <div className="space-y-3">
+              <div>
+                <span className="text-gray-400">Email:</span>
+                <span className="ml-2">{session.user?.email}</span>
               </div>
-              <div className="flex gap-3">
-                <Link href="/" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                  View Crisis Map
-                </Link>
-                <Link href="/donate" className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                  Fund Search Technology
-                </Link>
-                <Link href="/analysis" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                  AI Analysis
-                </Link>
+              <div>
+                <span className="text-gray-400">Name:</span>
+                <span className="ml-2">{session.user?.name || 'Not provided'}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">Member since:</span>
+                <span className="ml-2">Account created</span>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Real Crisis Management Dashboard */}
-        {crisisData && (
-          <>
-            {/* Your Location Statistics */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">🏠 Your Area Crisis</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-gray-400">In {crisisData.locationStats.state}:</span>
-                    <span className="ml-2 font-semibold text-white">
-                      {crisisData.locationStats.totalMissing} total missing
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Children missing:</span>
-                    <span className="ml-2 font-semibold text-red-400">
-                      {crisisData.locationStats.children}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Recently reported:</span>
-                    <span className="ml-2 font-semibold text-yellow-400">
-                      {crisisData.locationStats.recentlyReported} (last 30 days)
-                    </span>
-                  </div>
-                </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Impact Summary</h2>
+            <div className="space-y-3">
+              <div>
+                <span className="text-gray-400">Total Donated:</span>
+                <span className="ml-2 font-semibold text-green-400">
+                  ${donationSummary.totalDonated.toFixed(2)}
+                </span>
               </div>
-
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-blue-400 mb-4">💰 Your Impact</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-gray-400">AI Searches Funded:</span>
-                    <span className="ml-2 font-semibold text-yellow-400">
-                      {crisisImpact.aiSearchesFunded}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Critical Alerts Sent:</span>
-                    <span className="ml-2 font-semibold text-red-400">{crisisImpact.alertsSent}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Technology Hours Funded:</span>
-                    <span className="ml-2 font-semibold text-green-400">
-                      {crisisImpact.crisisResponseHours}h
-                    </span>
-                  </div>
-                </div>
+              <div>
+                <span className="text-gray-400">Donations Made:</span>
+                <span className="ml-2">{donationSummary.totalDonations}</span>
               </div>
-
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-purple-400 mb-4">⚡ Quick Actions</h3>
-                <div className="space-y-2">
-                  <button 
-                    onClick={() => window.open('/', '_blank')}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded text-sm"
-                  >
-                    View Local Cases
-                  </button>
-                  <button 
-                    onClick={() => window.open('/analysis', '_blank')}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm"
-                  >
-                    Run AI Analysis
-                  </button>
-                  <button 
-                    onClick={() => window.open('/donate', '_blank')}
-                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded text-sm"
-                  >
-                    Emergency Funding
-                  </button>
-                </div>
+              <div>
+                <span className="text-gray-400">Current Tier:</span>
+                <span className="ml-2 capitalize font-semibold text-blue-400">
+                  {subscription?.tier || 'Free'}
+                </span>
               </div>
-            </div>
-          </>
-        )}
-
-
-        {/* Real Crisis Cases Panel */}
-        {crisisData && (
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {/* Critical Cases (Real Data) */}
-            <div className="bg-gradient-to-br from-red-950/50 to-gray-900 border border-red-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">🚨 Critical Cases (Under 12)</h2>
-              {crisisData.criticalCases.length > 0 ? (
-                <div className="space-y-3">
-                  {crisisData.criticalCases.map((person, index) => (
-                    <div key={person.id} className="bg-black/30 border border-red-700 rounded-lg p-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-white font-semibold">{person.name}</p>
-                          <p className="text-red-400 text-sm">Age: {person.age}</p>
-                          <p className="text-gray-300 text-xs">{person.location}</p>
-                          <p className="text-yellow-400 text-xs">Reported: {person.date}</p>
-                        </div>
-                        <button 
-                          onClick={() => navigator.share ? navigator.share({
-                            title: `Help find ${person.name}`,
-                            text: `${person.name}, age ${person.age}, missing from ${person.location}`,
-                            url: window.location.origin
-                          }) : navigator.clipboard.writeText(`Help find ${person.name}, age ${person.age}, missing from ${person.location}`)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
-                        >
-                          Share
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <Link href="/" className="block w-full text-center bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-sm font-semibold">
-                    View All Cases on Map
-                  </Link>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">No critical cases in your immediate area</p>
-                  <p className="text-green-400 text-sm mt-2">This is good news!</p>
-                </div>
-              )}
-            </div>
-
-            {/* Nearby Missing Children (Real Location Data) */}
-            <div className="bg-gradient-to-br from-blue-950/50 to-gray-900 border border-blue-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">📍 Missing Children Near You</h2>
-              {locationPermission === 'granted' && crisisData.nearbyMissingChildren.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="text-blue-400 text-sm mb-4">
-                    Within 100 miles of your location
-                  </div>
-                  {crisisData.nearbyMissingChildren.slice(0, 3).map((person) => (
-                    <div key={person.id} className="bg-black/30 border border-blue-700 rounded-lg p-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-white font-semibold">{person.name}</p>
-                          <p className="text-blue-400 text-sm">Age: {person.age}</p>
-                          <p className="text-gray-300 text-xs">{person.location}</p>
-                          {person.latitude && person.longitude && crisisData.userLocation && (
-                            <p className="text-yellow-400 text-xs">
-                              Distance: {Math.round(calculateDistance(
-                                crisisData.userLocation.latitude,
-                                crisisData.userLocation.longitude,
-                                person.latitude,
-                                person.longitude
-                              ))} miles away
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {crisisData.nearbyMissingChildren.length > 3 && (
-                    <div className="text-center text-blue-400 text-sm">
-                      + {crisisData.nearbyMissingChildren.length - 3} more nearby
-                    </div>
-                  )}
-                </div>
-              ) : locationPermission === 'denied' ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-400 mb-4">Enable location access to see missing children near you</p>
-                  <button 
-                    onClick={requestLocationAccess}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
-                  >
-                    Enable Location Access
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="animate-pulse">
-                    <p className="text-yellow-400">🔄 Getting your location...</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        )}
-
-        {/* Recent Cases (Real Data) */}
-        {crisisData && crisisData.recentCases.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white">📅 Recently Reported Cases</h2>
-              <span className="text-gray-400 text-sm">Last 7 days</span>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {crisisData.recentCases.map((person) => (
-                <div key={person.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-white">{person.name}</h3>
-                    {person.age && person.age < 18 && (
-                      <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
-                        Child
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    {person.age && (
-                      <p className="text-blue-400">Age: {person.age}</p>
-                    )}
-                    <p className="text-gray-300">{person.location}</p>
-                    <p className="text-yellow-400">Reported: {person.date}</p>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <button 
-                      onClick={() => navigator.share ? navigator.share({
-                        title: `Help find ${person.name}`,
-                        text: `${person.name}${person.age ? `, age ${person.age}` : ''}, missing from ${person.location}`,
-                        url: window.location.origin
-                      }) : navigator.clipboard.writeText(`Help find ${person.name}${person.age ? `, age ${person.age}` : ''}, missing from ${person.location}`)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
-                    >
-                      Share
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 text-center">
-              <Link href="/" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold">
-                View All Cases on Interactive Map
-              </Link>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Subscription Management */}
         {subscription && (
@@ -646,16 +274,16 @@ export default function Dashboard() {
                   <li className="text-gray-300">
                     🤖 AI Interactions: {subscription.aiInteractionsPerDay === -1 ? 'Unlimited' : `${subscription.aiInteractionsPerDay}/day`}
                   </li>
-                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('no_ads') && (
+                  {subscription.features.no_ads && (
                     <li className="text-green-400">✅ Ad-free experience</li>
                   )}
-                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('priority_support') && (
+                  {subscription.features.priority_support && (
                     <li className="text-green-400">✅ Priority support</li>
                   )}
-                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('advanced_analytics') && (
+                  {subscription.features.advanced_analytics && (
                     <li className="text-green-400">✅ Advanced analytics</li>
                   )}
-                  {subscription.features && Array.isArray(subscription.features) && subscription.features.includes('api_access') && (
+                  {subscription.features.api_access && (
                     <li className="text-green-400">✅ API access</li>
                   )}
                 </ul>

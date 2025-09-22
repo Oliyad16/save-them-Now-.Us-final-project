@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { Card, Button } from '@/components/ui'
 import { UserTier } from '@/components/access'
-import { NotificationSystem } from '@/components/notifications/NotificationSystem'
 import { cn } from '@/lib/utils'
 
 interface MobileNavigationProps {
@@ -65,10 +64,6 @@ export function MobileNavigation({
 
           {/* Header Actions */}
           <div className="flex items-center gap-2">
-            {/* Notifications */}
-            {isAuthenticated && (
-              <NotificationSystem currentTier={currentTier} />
-            )}
 
             {/* Menu Button */}
             <motion.button

@@ -1,180 +1,304 @@
+'use client'
+
+import React from 'react'
 import Link from 'next/link'
+import { UnifiedHeader } from '@/components/navigation/UnifiedHeader'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { motion } from 'framer-motion'
 
 export default function About() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="bg-gray-900 border-b border-gray-800 py-6">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-white hover:text-gray-300 transition-colors">
-            Missing Persons Awareness
-          </Link>
-          <nav className="hidden md:flex gap-6">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/about" className="text-white font-semibold">
-              About
-            </Link>
-            <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
-              AI Analysis
-            </Link>
-            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
-              Profile
-            </Link>
-            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-              Sign In
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <UnifiedHeader />
+      
+      <div className="container mx-auto px-4 py-4">
+        <Breadcrumbs />
+      </div>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
-          <section className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <motion.section 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.h1 
+              className="text-4xl md:text-6xl font-bold mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <span className="text-white">About</span>{' '}
-              <span className="text-red-500">SaveThemNow.Jesus</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <span className="text-mission-secondary">SaveThemNow.Jesus</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl md:text-2xl text-mission-gray-300 max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               A platform dedicated to raising awareness about missing persons across the United States
               and helping bring them home.
-            </p>
-          </section>
+            </motion.p>
+          </motion.section>
 
           {/* Mission Section */}
-          <section className="mb-16">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-              <h2 className="text-3xl font-bold text-white mb-6">Our Mission</h2>
-              <p className="text-lg text-gray-300 leading-relaxed mb-6">
-                Every person who goes missing leaves behind a family searching for answers, a community 
-                that has lost someone precious. SaveThemNow.Jesus exists to ensure that no missing person 
-                is forgotten and that their stories continue to be told until they are found.
-              </p>
-              <p className="text-lg text-gray-300 leading-relaxed">
-                Through technology, data visualization, and community awareness, we aim to keep missing 
-                persons cases in the public eye and provide resources for families who are searching 
-                for their loved ones.
-              </p>
-            </div>
-          </section>
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <Card className="p-8">
+              <CardHeader>
+                <CardTitle className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+                  🎯 Our Mission
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-lg text-mission-gray-300 leading-relaxed">
+                  Every person who goes missing leaves behind a family searching for answers, a community 
+                  that has lost someone precious. SaveThemNow.Jesus exists to ensure that no missing person 
+                  is forgotten and that their stories continue to be told until they are found.
+                </p>
+                <p className="text-lg text-mission-gray-300 leading-relaxed">
+                  Through technology, data visualization, and community awareness, we aim to keep missing 
+                  persons cases in the public eye and provide resources for families who are searching 
+                  for their loved ones.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.section>
 
           {/* What We Do Section */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold text-white mb-8">What We Do</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">📊 Data Visualization</h3>
-                <p className="text-gray-300">
-                  We present missing persons data in an interactive, accessible format that helps 
-                  people understand the scope and geographic distribution of missing persons cases.
-                </p>
-              </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">🗺️ Interactive Mapping</h3>
-                <p className="text-gray-300">
-                  Our interactive map displays missing persons cases across the United States, 
-                  making it easier to see patterns and stay informed about cases in your area.
-                </p>
-              </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">📢 Awareness Campaigns</h3>
-                <p className="text-gray-300">
-                  We raise awareness about the ongoing crisis of missing persons and provide 
-                  educational resources about prevention and response.
-                </p>
-              </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">🤝 Community Support</h3>
-                <p className="text-gray-300">
-                  We provide a platform for communities to stay informed and engaged with 
-                  missing persons cases, fostering collective action and support.
-                </p>
-              </div>
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">What We Do</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: '📊',
+                  title: 'Data Visualization',
+                  description: 'We present missing persons data in an interactive, accessible format that helps people understand the scope and geographic distribution of missing persons cases.'
+                },
+                {
+                  icon: '🗺️',
+                  title: 'Interactive Mapping',
+                  description: 'Our interactive map displays missing persons cases across the United States, making it easier to see patterns and stay informed about cases in your area.'
+                },
+                {
+                  icon: '📢',
+                  title: 'Awareness Campaigns',
+                  description: 'We raise awareness about the ongoing crisis of missing persons and provide educational resources about prevention and response.'
+                },
+                {
+                  icon: '🤝',
+                  title: 'Community Support',
+                  description: 'We provide a platform for communities to stay informed and engaged with missing persons cases, fostering collective action and support.'
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
+                >
+                  <Card className="p-6 h-full" hoverable>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{item.icon}</span>
+                        <h3 className="text-xl font-semibold text-mission-secondary">{item.title}</h3>
+                      </div>
+                      <p className="text-mission-gray-300 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* Statistics Section */}
-          <section className="mb-16">
-            <div className="bg-gradient-to-r from-red-900/20 to-gray-900/20 border border-red-800/30 rounded-lg p-8">
-              <h2 className="text-3xl font-bold text-white mb-6">The Reality</h2>
-              <div className="grid md:grid-cols-3 gap-8 text-center">
-                <div>
-                  <div className="text-3xl md:text-4xl font-bold text-red-500 mb-2">600,000+</div>
-                  <p className="text-gray-300">Missing persons reports filed annually in the US</p>
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
+          >
+            <Card className="bg-gradient-to-r from-mission-secondary/10 to-mission-gray-900 border-mission-secondary/30 p-8">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold text-white mb-6 flex items-center justify-center gap-3">
+                  📊 The Reality
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-8 text-center">
+                  {[
+                    { number: '600,000+', description: 'Missing persons reports filed annually in the US' },
+                    { number: '4,400+', description: 'Unidentified remains discovered each year' },
+                    { number: '1,000+', description: 'Children go missing every day' }
+                  ].map((stat, index) => (
+                    <motion.div
+                      key={stat.number}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: 1.6 + index * 0.2 }}
+                      className="space-y-2"
+                    >
+                      <motion.div 
+                        className="text-3xl md:text-4xl font-bold text-mission-secondary mb-2"
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        {stat.number}
+                      </motion.div>
+                      <p className="text-mission-gray-300 text-sm leading-relaxed">{stat.description}</p>
+                    </motion.div>
+                  ))}
                 </div>
-                <div>
-                  <div className="text-3xl md:text-4xl font-bold text-red-500 mb-2">4,400+</div>
-                  <p className="text-gray-300">Unidentified remains discovered each year</p>
-                </div>
-                <div>
-                  <div className="text-3xl md:text-4xl font-bold text-red-500 mb-2">1,000+</div>
-                  <p className="text-gray-300">Children go missing every day</p>
-                </div>
-              </div>
-            </div>
-          </section>
+              </CardContent>
+            </Card>
+          </motion.section>
 
           {/* How You Can Help Section */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold text-white mb-8">How You Can Help</h2>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-4">🔍 Stay Informed</h3>
-                  <p className="text-gray-300 mb-4">
-                    Regularly check our map and stay aware of missing persons cases in your area.
-                  </p>
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 2.2 }}
+          >
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">How You Can Help</h2>
+            <Card className="p-8">
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 2.4 }}
+                    className="space-y-6"
+                  >
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                        🔍 Stay Informed
+                      </h3>
+                      <p className="text-mission-gray-300 leading-relaxed">
+                        Regularly check our map and stay aware of missing persons cases in your area.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                        📱 Share Information
+                      </h3>
+                      <p className="text-mission-gray-300 leading-relaxed">
+                        Share missing persons alerts on social media to expand the search network.
+                      </p>
+                    </div>
+                  </motion.div>
                   
-                  <h3 className="text-xl font-semibold text-white mb-4">📱 Share Information</h3>
-                  <p className="text-gray-300 mb-4">
-                    Share missing persons alerts on social media to expand the search network.
-                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 2.6 }}
+                    className="space-y-6"
+                  >
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                        👀 Be Vigilant
+                      </h3>
+                      <p className="text-mission-gray-300 leading-relaxed">
+                        If you see something suspicious or have information about a missing person, 
+                        contact local authorities immediately.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                        ❤️ Support Families
+                      </h3>
+                      <p className="text-mission-gray-300 leading-relaxed">
+                        Consider volunteering with or donating to organizations that support 
+                        families of missing persons.
+                      </p>
+                    </div>
+                  </motion.div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-4">👀 Be Vigilant</h3>
-                  <p className="text-gray-300 mb-4">
-                    If you see something suspicious or have information about a missing person, 
-                    contact local authorities immediately.
-                  </p>
-                  
-                  <h3 className="text-xl font-semibold text-white mb-4">❤️ Support Families</h3>
-                  <p className="text-gray-300">
-                    Consider volunteering with or donating to organizations that support 
-                    families of missing persons.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+              </CardContent>
+            </Card>
+          </motion.section>
 
-          {/* Contact Section */}
-          <section className="text-center">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-              <h2 className="text-3xl font-bold text-white mb-6">Get Involved</h2>
-              <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-                Together, we can make a difference. Every person who goes missing matters, 
-                and every person who helps search brings hope to families in need.
-              </p>
-              <Link 
-                href="/"
-                className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
-              >
-                View Missing Persons Map
-              </Link>
-            </div>
-          </section>
+          {/* Get Involved Section */}
+          <motion.section 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 2.8 }}
+          >
+            <Card className="p-8 bg-gradient-to-br from-mission-primary/10 to-mission-gray-900">
+              <CardContent className="space-y-6">
+                <motion.h2 
+                  className="text-3xl font-bold text-white mb-6 flex items-center justify-center gap-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 3 }}
+                >
+                  🤝 Get Involved
+                </motion.h2>
+                
+                <motion.p 
+                  className="text-lg text-mission-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 3.2 }}
+                >
+                  Together, we can make a difference. Every person who goes missing matters, 
+                  and every person who helps search brings hope to families in need.
+                </motion.p>
+                
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 3.4 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center"
+                >
+                  <Link 
+                    href="/"
+                    className="inline-flex items-center justify-center bg-mission-secondary hover:bg-red-600 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+                  >
+                    🗺️ View Missing Persons Map
+                  </Link>
+                  
+                  <Link 
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center bg-mission-primary hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+                  >
+                    📊 Join Our Platform
+                  </Link>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.section>
         </div>
       </main>
 
-      <footer className="bg-gray-900 border-t border-gray-800 py-8 mt-16">
+      <footer className="bg-mission-gray-900 border-t border-mission-gray-800 py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-400">
+          <motion.p 
+            className="text-mission-gray-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 3.6 }}
+          >
             © 2025 SaveThemNow.Jesus - Dedicated to bringing missing persons home
-          </p>
+          </motion.p>
         </div>
       </footer>
     </div>
