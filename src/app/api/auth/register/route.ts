@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { getDatabase } from '@/lib/database/connection'
-import { v4 as uuidv4 } from 'uuid'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,35 +49,40 @@ export async function POST(request: NextRequest) {
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12)
-    const userId = uuidv4()
 
-    // Create user and profile in transaction
-    const insertUser = db.prepare(`
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+    // Create user
+    const result = db.prepare(`
       INSERT INTO users (
-        id, email, name, password_hash, tier, email_verified,
-        createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `)
+        email, password_hash, name, zip_code, 
+        email_verification_token, verification_expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+      email,
+      passwordHash,
+      name,
+      zipCode || null,
+      verificationToken,
+      verificationExpires.toISOString()
+    )
 
-    const insertProfile = db.prepare(`
-      INSERT INTO user_profiles (
-        user_id, zip_code, onboarding_completed,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `)
+    // Log user registration activity
+    db.prepare(`
+      INSERT INTO user_activity (user_id, activity_type, activity_data) 
+      VALUES (?, 'registration', '{"ip_address": "pending", "user_agent": "pending"}')
+    `).run(result.lastInsertRowid)
 
-    const transaction = db.transaction(() => {
-      insertUser.run(userId, email, name, passwordHash, 'free', 1) // email verified = true for demo
-      insertProfile.run(userId, zipCode || null, 0)
-    })
-
-    transaction()
+    // TODO: Send verification email
+    // await sendVerificationEmail(email, verificationToken)
 
     return NextResponse.json(
       {
-        success: true,
-        message: 'Account created successfully! You can now sign in.',
-        userId: userId
+        message: 'User registered successfully. Please check your email for verification.',
+        userId: result.lastInsertRowid,
+        requiresVerification: true
       },
       { status: 201 }
     )

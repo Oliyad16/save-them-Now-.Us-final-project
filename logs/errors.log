@@ -1,4 +1,0 @@
-2025-09-10 00:13:51 - pipeline.namus - ERROR - make_request:56 - All retry attempts failed for https://namus.nij.ojp.gov/case/search
-2025-09-10 00:13:51 - pipeline.namus - ERROR - collect_data:97 - NamUs collection failed: 404 Client Error: Not Found for url: https://namus.nij.ojp.gov/case/search?tab=missing&subtab=case&status=open
-2025-09-10 00:30:48 - pipeline.namus - ERROR - make_request:56 - All retry attempts failed for https://namus.nij.ojp.gov/case/search
-2025-09-10 00:30:48 - pipeline.namus - ERROR - collect_data:97 - NamUs collection failed: 404 Client Error: Not Found for url: https://namus.nij.ojp.gov/case/search?tab=missing&subtab=case&status=open

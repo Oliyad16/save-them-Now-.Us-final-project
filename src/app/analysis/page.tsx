@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { UnifiedHeader } from '@/components/navigation/UnifiedHeader'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
+import { LoadingState, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { motion } from 'framer-motion'
 
 // Dynamically import components to avoid SSR issues
 const RiskAnalysisMap = dynamic(() => import('@/components/RiskAnalysisMap'), {
   ssr: false,
-  loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg"></div>
+  loading: () => <LoadingState type="map" message="Loading risk analysis map..." />
 })
 
 interface RiskArea {
@@ -129,247 +132,372 @@ export default function Analysis() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="bg-gray-900 border-b border-gray-800 py-6">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-white hover:text-gray-300 transition-colors">
-            Missing Persons Awareness
-          </Link>
-          <nav className="hidden md:flex gap-6">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-              About
-            </Link>
-            <Link href="/analysis" className="text-white font-semibold">
-              AI Analysis
-            </Link>
-            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
-              Profile
-            </Link>
-            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-              Sign In
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <UnifiedHeader />
+      
+      <div className="container mx-auto px-4 py-4">
+        <Breadcrumbs />
+      </div>
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
-          <section className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <motion.section 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.h1 
+              className="text-4xl md:text-5xl font-bold mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <span className="text-white">AI Risk Analysis</span>{' '}
-              <span className="text-red-500">& Safety Insights</span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <span className="text-mission-secondary">& Safety Insights</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-mission-gray-300 max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               Advanced analysis of high-risk areas and safety patterns to protect vulnerable populations,
               with special focus on women and children safety.
-            </p>
+            </motion.p>
             
             {/* AI Status Indicator */}
-            <div className="flex justify-center items-center mt-6">
-              <div className="flex items-center gap-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-blue-400 font-mono text-sm">AI ANALYSIS ACTIVE</span>
+            <motion.div 
+              className="flex justify-center items-center mt-6"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <div className="flex items-center gap-3 bg-mission-gray-900 border border-mission-gray-700 rounded-lg px-4 py-2">
+                <div className="w-2 h-2 bg-mission-primary rounded-full animate-pulse"></div>
+                <span className="text-mission-primary font-mono text-sm">AI ANALYSIS ACTIVE</span>
               </div>
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
           {/* Risk Filter */}
-          <section className="mb-8">
+          <motion.section 
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
             <div className="flex flex-wrap gap-4 justify-center">
-              {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((risk) => (
-                <button
+              {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((risk, index) => (
+                <motion.button
                   key={risk}
                   onClick={() => setSelectedRisk(risk as any)}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
                     selectedRisk === risk
-                      ? 'bg-red-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      ? 'bg-mission-secondary text-white scale-105'
+                      : 'bg-mission-gray-800 text-mission-gray-300 hover:bg-mission-gray-700 hover:scale-105'
                   }`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 1 + index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {risk} RISK
-                </button>
+                </motion.button>
               ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* Risk Analysis Map */}
-          <section className="mb-12">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Geographic Risk Distribution</h2>
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                  <p className="mt-2 text-gray-300">Analyzing risk patterns...</p>
-                </div>
-              ) : (
-                <RiskAnalysisMap riskAreas={filteredAreas} />
-              )}
-            </div>
-          </section>
+          <motion.section 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
+          >
+            <Card className="p-6">
+              <CardHeader>
+                <CardTitle className="text-2xl font-semibold text-white mb-4">
+                  🗺️ Geographic Risk Distribution
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <LoadingState 
+                    type="map" 
+                    message="Analyzing risk patterns..." 
+                    className="py-12"
+                  />
+                ) : (
+                  <RiskAnalysisMap riskAreas={filteredAreas} />
+                )}
+              </CardContent>
+            </Card>
+          </motion.section>
 
           {/* Risk Areas List */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">High-Risk Areas Analysis</h2>
+          <motion.section 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.6 }}
+          >
+            <motion.h2 
+              className="text-2xl font-semibold mb-6 text-white"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 1.8 }}
+            >
+              📊 High-Risk Areas Analysis
+            </motion.h2>
             <div className="grid gap-6">
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
-                  <p className="mt-2 text-gray-400">Processing safety analysis...</p>
-                </div>
+                <LoadingState 
+                  type="skeleton" 
+                  message="Processing safety analysis..." 
+                  className="py-8"
+                />
               ) : (
-                filteredAreas.map((area) => (
-                  <div key={area.id} className={`border rounded-lg p-6 ${getRiskBg(area.riskLevel)}`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-white">{area.city}, {area.state}</h3>
-                        <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full mt-2 ${
-                          area.riskLevel === 'HIGH' ? 'bg-red-900 text-red-200' :
-                          area.riskLevel === 'MEDIUM' ? 'bg-yellow-900 text-yellow-200' :
-                          'bg-green-900 text-green-200'
-                        }`}>
-                          {area.riskLevel} RISK
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-white">{area.totalCases}</div>
-                        <div className="text-sm text-gray-400">Total Cases</div>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Demographics at Risk */}
-                      <div>
-                        <h4 className="font-semibold text-white mb-3">Vulnerable Populations</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-pink-400">Women at Risk:</span>
-                            <span className="font-semibold text-white">{area.womenAtRisk}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-blue-400">Children at Risk:</span>
-                            <span className="font-semibold text-white">{area.childrenAtRisk}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Risk Factors */}
-                      <div>
-                        <h4 className="font-semibold text-white mb-3">AI-Identified Risk Factors</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {area.riskFactors.map((factor, index) => (
-                            <span
-                              key={index}
-                              className="bg-gray-800 text-gray-300 px-2 py-1 text-sm rounded"
-                            >
-                              {factor}
+                filteredAreas.map((area, index) => (
+                  <motion.div 
+                    key={area.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 2 + index * 0.1 }}
+                  >
+                    <Card className={`p-6 ${getRiskBg(area.riskLevel)}`} hoverable>
+                      <CardContent>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-semibold text-white">{area.city}, {area.state}</h3>
+                            <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full mt-2 ${
+                              area.riskLevel === 'HIGH' ? 'bg-mission-secondary/20 text-mission-secondary border border-mission-secondary/30' :
+                              area.riskLevel === 'MEDIUM' ? 'bg-yellow-900/20 text-yellow-200 border border-yellow-700/30' :
+                              'bg-green-900/20 text-green-200 border border-green-700/30'
+                            }`}>
+                              {area.riskLevel} RISK
                             </span>
-                          ))}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-white">{area.totalCases}</div>
+                            <div className="text-sm text-mission-gray-400">Total Cases</div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Demographics at Risk */}
+                          <div>
+                            <h4 className="font-semibold text-white mb-3">👥 Vulnerable Populations</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-pink-400">Women at Risk:</span>
+                                <span className="font-semibold text-white">{area.womenAtRisk}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-blue-400">Children at Risk:</span>
+                                <span className="font-semibold text-white">{area.childrenAtRisk}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Risk Factors */}
+                          <div>
+                            <h4 className="font-semibold text-white mb-3">🤖 AI-Identified Risk Factors</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {area.riskFactors.map((factor, index) => (
+                                <span
+                                  key={index}
+                                  className="bg-mission-gray-800 text-mission-gray-300 px-2 py-1 text-sm rounded border border-mission-gray-700"
+                                >
+                                  {factor}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))
               )}
             </div>
-          </section>
+          </motion.section>
 
           {/* Safety Recommendations */}
-          <section className="mb-12">
-            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/30 rounded-lg p-8">
-              <h2 className="text-2xl font-semibold text-white mb-6">AI-Generated Safety Recommendations</h2>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-blue-400 mb-4">👩‍🦰 For Women's Safety</h3>
-                  <ul className="space-y-2 text-gray-300">
-                    <li>• Avoid isolated areas, especially during late hours</li>
-                    <li>• Share location with trusted contacts when traveling</li>
-                    <li>• Stay aware of surroundings in crowded tourist areas</li>
-                    <li>• Use well-lit, populated transportation hubs</li>
-                    <li>• Trust instincts and report suspicious behavior</li>
-                  </ul>
+          <motion.section 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 2.4 }}
+          >
+            <Card className="bg-gradient-to-r from-mission-primary/10 to-purple-900/20 border-mission-primary/30 p-8">
+              <CardHeader>
+                <CardTitle className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                  🛡️ AI-Generated Safety Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 2.6 }}
+                  >
+                    <h3 className="text-lg font-semibold text-mission-primary mb-4">👩‍🦰 For Women's Safety</h3>
+                    <ul className="space-y-2 text-mission-gray-300">
+                      <li>• Avoid isolated areas, especially during late hours</li>
+                      <li>• Share location with trusted contacts when traveling</li>
+                      <li>• Stay aware of surroundings in crowded tourist areas</li>
+                      <li>• Use well-lit, populated transportation hubs</li>
+                      <li>• Trust instincts and report suspicious behavior</li>
+                    </ul>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 2.8 }}
+                  >
+                    <h3 className="text-lg font-semibold text-pink-400 mb-4">👶 For Children's Safety</h3>
+                    <ul className="space-y-2 text-mission-gray-300">
+                      <li>• Maintain constant supervision in high-risk areas</li>
+                      <li>• Teach children about stranger danger</li>
+                      <li>• Establish meeting points in crowded locations</li>
+                      <li>• Monitor children's online activities and location</li>
+                      <li>• Ensure children know their full address and phone number</li>
+                    </ul>
+                  </motion.div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-pink-400 mb-4">👶 For Children's Safety</h3>
-                  <ul className="space-y-2 text-gray-300">
-                    <li>• Maintain constant supervision in high-risk areas</li>
-                    <li>• Teach children about stranger danger</li>
-                    <li>• Establish meeting points in crowded locations</li>
-                    <li>• Monitor children's online activities and location</li>
-                    <li>• Ensure children know their full address and phone number</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
+              </CardContent>
+            </Card>
+          </motion.section>
 
           {/* AI Methodology */}
-          <section className="mb-12">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-              <h2 className="text-2xl font-semibold text-white mb-6">AI Analysis Methodology</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-green-400 mb-3">📊 Data Sources</h3>
-                  <p className="text-gray-300 text-sm">
-                    Missing persons databases, crime statistics, demographic data, 
-                    geographic factors, and social patterns.
-                  </p>
+          <motion.section 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 3 }}
+          >
+            <Card className="p-8">
+              <CardHeader>
+                <CardTitle className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+                  🔬 AI Analysis Methodology
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-8">
+                  {[
+                    {
+                      icon: '📊',
+                      title: 'Data Sources',
+                      description: 'Missing persons databases, crime statistics, demographic data, geographic factors, and social patterns.',
+                      color: 'text-green-400'
+                    },
+                    {
+                      icon: '🤖',
+                      title: 'AI Processing',
+                      description: 'Machine learning algorithms analyze patterns, correlations, and risk factors to identify high-vulnerability areas.',
+                      color: 'text-mission-primary'
+                    },
+                    {
+                      icon: '⚡',
+                      title: 'Real-time Updates',
+                      description: 'Continuous analysis of new data to provide updated risk assessments and safety recommendations.',
+                      color: 'text-purple-400'
+                    }
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 3.2 + index * 0.2 }}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{item.icon}</span>
+                        <h3 className={`text-lg font-semibold ${item.color}`}>{item.title}</h3>
+                      </div>
+                      <p className="text-mission-gray-300 text-sm leading-relaxed">
+                        {item.description}
+                      </p>
+                    </motion.div>
+                  ))}
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-blue-400 mb-3">🤖 AI Processing</h3>
-                  <p className="text-gray-300 text-sm">
-                    Machine learning algorithms analyze patterns, correlations, 
-                    and risk factors to identify high-vulnerability areas.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-purple-400 mb-3">⚡ Real-time Updates</h3>
-                  <p className="text-gray-300 text-sm">
-                    Continuous analysis of new data to provide updated risk 
-                    assessments and safety recommendations.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+              </CardContent>
+            </Card>
+          </motion.section>
 
           {/* Emergency Contact */}
-          <section className="text-center">
-            <div className="bg-red-900/20 border border-red-700 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-red-400 mb-4">Emergency Information</h2>
-              <p className="text-lg text-gray-300 mb-6">
-                If you or someone you know is in immediate danger or has information 
-                about a missing person, contact authorities immediately.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
-                  <span className="text-red-400 font-semibold">Emergency: 911</span>
-                </div>
-                <div className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
-                  <span className="text-blue-400 font-semibold">Missing Child: 1-800-THE-LOST</span>
-                </div>
-                <div className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
-                  <span className="text-purple-400 font-semibold">FBI Tip Line: 1-800-CALL-FBI</span>
-                </div>
-              </div>
-            </div>
-          </section>
+          <motion.section 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 3.8 }}
+          >
+            <Card className="bg-mission-secondary/10 border-mission-secondary/30 p-8">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-mission-secondary mb-4 flex items-center justify-center gap-3">
+                  🚨 Emergency Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <motion.p 
+                  className="text-lg text-mission-gray-300 leading-relaxed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 4 }}
+                >
+                  If you or someone you know is in immediate danger or has information 
+                  about a missing person, contact authorities immediately.
+                </motion.p>
+                <motion.div 
+                  className="flex flex-wrap justify-center gap-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 4.2 }}
+                >
+                  {[
+                    { text: 'Emergency: 911', color: 'text-mission-secondary' },
+                    { text: 'Missing Child: 1-800-THE-LOST', color: 'text-mission-primary' },
+                    { text: 'FBI Tip Line: 1-800-CALL-FBI', color: 'text-purple-400' }
+                  ].map((contact, index) => (
+                    <motion.div
+                      key={contact.text}
+                      className="bg-mission-gray-900 border border-mission-gray-700 rounded-lg px-4 py-2"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: 4.4 + index * 0.1 }}
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <span className={`${contact.color} font-semibold`}>{contact.text}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.section>
         </div>
       </main>
 
-      <footer className="bg-gray-900 border-t border-gray-800 py-8 mt-16">
+      <footer className="bg-mission-gray-900 border-t border-mission-gray-800 py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-400 mb-2">
+          <motion.p 
+            className="text-mission-gray-400 mb-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 4.8 }}
+          >
             © 2025 SaveThemNow.Jesus - AI-powered safety analysis for community protection
-          </p>
-          <p className="text-gray-500 text-sm">
+          </motion.p>
+          <motion.p 
+            className="text-mission-gray-500 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 5 }}
+          >
             Risk analysis is based on available data and statistical patterns. Always exercise personal judgment and follow local safety guidelines.
-          </p>
+          </motion.p>
         </div>
       </footer>
     </div>

@@ -67,62 +67,17 @@ export default function Dashboard() {
     }
   }
 
-  const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription? It will remain active until the end of your current billing period.')) {
-      return
-    }
-
-    try {
-      const response = await fetch('/api/subscriptions', {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        fetchUserData() // Refresh data
-        alert('Subscription will be canceled at the end of the current period.')
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.error}`)
-      }
-    } catch (err) {
-      alert('Failed to cancel subscription')
-    }
-  }
-
-  const handleReactivateSubscription = async () => {
-    try {
-      const response = await fetch('/api/subscriptions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action: 'reactivate' })
-      })
-
-      if (response.ok) {
-        fetchUserData() // Refresh data
-        alert('Subscription reactivated successfully!')
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.error}`)
-      }
-    } catch (err) {
-      alert('Failed to reactivate subscription')
-    }
-  }
-
-  // Generate user stats for badge system
   const userStats = {
     totalDonationAmount: donationSummary.totalDonated,
     donationCount: donationSummary.totalDonations,
-    engagementDays: 120, // This would come from actual user engagement tracking
-    aiInteractions: 45, // This would come from actual AI interaction tracking
-    casesShared: 45, // This would come from actual sharing tracking
-    referrals: 8, // This would come from actual referral tracking
+    engagementDays: 120,
+    aiInteractions: 45,
+    casesShared: 45,
+    referrals: 8,
     specialActions: ['first_donation', 'share_milestone'] as any[],
-    joinDate: new Date('2024-01-01'), // This would come from user creation date
+    joinDate: new Date('2024-01-01'),
     lastActiveDate: new Date(),
-    streakDays: 30 // This would come from actual streak tracking
+    streakDays: 30
   }
 
   if (status === 'loading' || loading) {
@@ -137,7 +92,7 @@ export default function Dashboard() {
   }
 
   if (!session) {
-    return null // Will redirect
+    return null
   }
 
   return (
@@ -156,17 +111,11 @@ export default function Dashboard() {
             <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
               About
             </Link>
-            <Link href="/analysis" className="text-gray-300 hover:text-white transition-colors">
-              AI Analysis
-            </Link>
             <Link href="/dashboard" className="text-white font-semibold">
               Dashboard
             </Link>
             <Link href="/profile" className="text-gray-300 hover:text-white transition-colors">
               Profile
-            </Link>
-            <Link href="/auth/signin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-              Sign In
             </Link>
           </nav>
         </div>
@@ -179,7 +128,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Badge Showcase - Top Section */}
+        {/* Badge Showcase */}
         <div className="mb-8">
           <BadgeShowcase 
             userStats={userStats}
@@ -230,96 +179,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* Subscription Management */}
-        {subscription && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Subscription</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold mb-3">Current Plan</h3>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-gray-400">Tier:</span>
-                    <span className="ml-2 capitalize font-semibold text-blue-400">
-                      {subscription.tier}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Status:</span>
-                    <span className={`ml-2 capitalize ${
-                      subscription.status === 'active' ? 'text-green-400' : 'text-yellow-400'
-                    }`}>
-                      {subscription.status}
-                    </span>
-                  </div>
-                  {subscription.currentPeriodEnd && (
-                    <div>
-                      <span className="text-gray-400">Renews:</span>
-                      <span className="ml-2">
-                        {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Features</h3>
-                <ul className="space-y-1 text-sm">
-                  <li className="text-gray-300">
-                    🗺️ Map Access: {subscription.mapAccessLevel}
-                  </li>
-                  <li className="text-gray-300">
-                    🤖 AI Interactions: {subscription.aiInteractionsPerDay === -1 ? 'Unlimited' : `${subscription.aiInteractionsPerDay}/day`}
-                  </li>
-                  {subscription.features.no_ads && (
-                    <li className="text-green-400">✅ Ad-free experience</li>
-                  )}
-                  {subscription.features.priority_support && (
-                    <li className="text-green-400">✅ Priority support</li>
-                  )}
-                  {subscription.features.advanced_analytics && (
-                    <li className="text-green-400">✅ Advanced analytics</li>
-                  )}
-                  {subscription.features.api_access && (
-                    <li className="text-green-400">✅ API access</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-6 flex gap-4">
-              {subscription.tier !== 'free' && (
-                <>
-                  {subscription.cancelAtPeriodEnd ? (
-                    <button
-                      onClick={handleReactivateSubscription}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      Reactivate Subscription
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleCancelSubscription}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      Cancel Subscription
-                    </button>
-                  )}
-                </>
-              )}
-              
-              <Link
-                href="/pricing"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                {subscription.tier === 'free' ? 'Upgrade Plan' : 'Change Plan'}
-              </Link>
-            </div>
-          </div>
-        )}
 
         {/* Recent Donations */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">

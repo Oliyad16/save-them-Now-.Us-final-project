@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authConfig } from '@/lib/auth/auth-config'
 import { stripe } from '@/lib/stripe/config'
+import { subscriptionsService } from '@/lib/firestore/services'
 import { getDatabase } from '@/lib/database/connection'
 
 // Get user's current subscription
@@ -16,64 +17,75 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const db = getDatabase()
-    
-    // Get user first, then subscription
-    const user = db.prepare('SELECT id, tier FROM users WHERE email = ?').get(session.user.email) as any
-    
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    let subscription
+    try {
+      // Try Firestore first
+      subscription = await subscriptionsService.getActiveByUserId(session.user.email)
+    } catch (firestoreError: any) {
+      console.warn('Firestore failed, using SQLite fallback:', firestoreError.message)
+      // Fallback to SQLite
+      const db = getDatabase()
+      subscription = db.prepare(`
+        SELECT 
+          s.*,
+          st.name as tier_name,
+          st.price_monthly,
+          st.price_yearly,
+          st.features,
+          st.ai_interactions_per_day,
+          st.map_access_level
+        FROM subscriptions s
+        JOIN subscription_tiers st ON s.tier_id = st.id
+        WHERE s.user_id = ? AND s.status = 'active'
+        ORDER BY s.created_at DESC
+        LIMIT 1
+      `).get(session.user.email) as any
     }
 
-    // Get current subscription with tier details  
-    const subscription = db.prepare(`
-      SELECT 
-        s.*,
-        st.name as tier_name,
-        st.price_monthly,
-        st.price_yearly,
-        st.features,
-        st.ai_interactions_daily as ai_interactions_per_day,
-        st.map_access_level
-      FROM user_subscriptions s
-      JOIN subscription_tiers st ON s.tier_id = st.id
-      WHERE s.user_id = ? AND s.status = 'active'
-      ORDER BY s.created_at DESC
-      LIMIT 1
-    `).get(user.id) as any
-
     if (!subscription) {
-      // Use user's tier or default to free
-      const userTier = user.tier || 'free'
-      const tierInfo = db.prepare(
-        'SELECT * FROM subscription_tiers WHERE id = ?'
-      ).get(userTier) as any
+      // Return free tier information
+      try {
+        const db = getDatabase()
+        const freeTier = db.prepare(
+          'SELECT * FROM subscription_tiers WHERE name = ?'
+        ).get('free') as any
 
-      return NextResponse.json({
-        tier: userTier,
-        status: 'active',
-        features: tierInfo ? JSON.parse(tierInfo.features) : ['account_dashboard'],
-        aiInteractionsPerDay: tierInfo?.ai_interactions_daily || 3,
-        mapAccessLevel: tierInfo?.map_access_level || 'basic',
-        isActive: true
-      })
+        return NextResponse.json({
+          tier: 'free',
+          status: 'active',
+          features: freeTier ? JSON.parse(freeTier.features) : {},
+          aiInteractionsPerDay: freeTier?.ai_interactions_per_day || 3,
+          mapAccessLevel: 'basic',
+          isActive: true
+        })
+      } catch {
+        // Default free tier if database is unavailable
+        return NextResponse.json({
+          tier: 'free',
+          status: 'active',
+          features: {},
+          aiInteractionsPerDay: 3,
+          mapAccessLevel: 'basic',
+          isActive: true
+        })
+      }
     }
 
     // Check if subscription is actually active
     const isActive = subscription.status === 'active' && 
-      new Date(subscription.current_period_end) > new Date()
+      new Date(subscription.currentPeriodEnd || subscription.current_period_end) > new Date()
 
     return NextResponse.json({
       id: subscription.id,
-      tier: subscription.tier_name,
+      tier: subscription.tier_name || subscription.tierId,
       status: subscription.status,
-      stripeSubscriptionId: subscription.stripe_subscription_id,
-      currentPeriodStart: subscription.current_period_start,
-      currentPeriodEnd: subscription.current_period_end,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      features: JSON.parse(subscription.features),
-      aiInteractionsPerDay: subscription.ai_interactions_per_day,
-      mapAccessLevel: subscription.map_access_level,
+      stripeSubscriptionId: subscription.stripeSubscriptionId || subscription.stripe_subscription_id,
+      currentPeriodStart: subscription.currentPeriodStart || subscription.current_period_start,
+      currentPeriodEnd: subscription.currentPeriodEnd || subscription.current_period_end,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || subscription.cancel_at_period_end,
+      features: subscription.features ? (typeof subscription.features === 'string' ? JSON.parse(subscription.features) : subscription.features) : {},
+      aiInteractionsPerDay: subscription.ai_interactions_per_day || 10,
+      mapAccessLevel: subscription.map_access_level || 'premium',
       priceMonthly: subscription.price_monthly,
       priceYearly: subscription.price_yearly,
       isActive
@@ -102,20 +114,14 @@ export async function DELETE(request: NextRequest) {
 
     const db = getDatabase()
     
-    // Get user first
-    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(session.user.email) as any
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     // Get current subscription
     const subscription = db.prepare(`
       SELECT stripe_subscription_id 
-      FROM user_subscriptions 
+      FROM subscriptions 
       WHERE user_id = ? AND status = 'active'
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(user.id) as any
+    `).get(session.user.email) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -137,7 +143,7 @@ export async function DELETE(request: NextRequest) {
 
     // Update local database
     db.prepare(`
-      UPDATE user_subscriptions 
+      UPDATE subscriptions 
       SET cancel_at_period_end = 1, updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ?
     `).run(subscription.stripe_subscription_id)
@@ -179,20 +185,14 @@ export async function PATCH(request: NextRequest) {
 
     const db = getDatabase()
     
-    // Get user first  
-    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(session.user.email) as any
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     // Get subscription that's set to cancel
     const subscription = db.prepare(`
       SELECT stripe_subscription_id 
-      FROM user_subscriptions 
+      FROM subscriptions 
       WHERE user_id = ? AND status = 'active' AND cancel_at_period_end = 1
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(user.id) as any
+    `).get(session.user.email) as any
 
     if (!subscription?.stripe_subscription_id) {
       return NextResponse.json(
@@ -214,7 +214,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update local database
     db.prepare(`
-      UPDATE user_subscriptions 
+      UPDATE subscriptions 
       SET cancel_at_period_end = 0, updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ?
     `).run(subscription.stripe_subscription_id)

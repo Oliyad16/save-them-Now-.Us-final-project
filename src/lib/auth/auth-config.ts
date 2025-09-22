@@ -1,10 +1,22 @@
 import { NextAuthOptions } from 'next-auth'
+import { hybridAuthConfig } from './hybrid-auth-config'
+
+// Re-export the hybrid auth configuration
+export const authConfig: NextAuthOptions = hybridAuthConfig
+
+// Export utilities
+export { getAuthStrategy, getUserData } from './hybrid-auth-config'
+export { firebaseAuth } from './firebase-auth'
+export { useFirebaseAuth } from './firebase-auth-hooks'
+
+// Legacy export for backward compatibility
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { getDatabase } from '@/lib/database/connection'
 import bcrypt from 'bcryptjs'
 
-export const authConfig: NextAuthOptions = {
+// Legacy auth config (kept for reference)
+const legacyAuthConfig: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: 'credentials',
@@ -65,8 +77,8 @@ export const authConfig: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session?.user && token) {
-        session.user.id = token.sub || ''
-        session.user.tier = token.tier || 'free'
+        (session.user as any).id = token.sub;
+        (session.user as any).tier = token.tier
       }
       return session
     },
@@ -83,11 +95,16 @@ export const authConfig: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
+    verifyRequest: '/auth/verify-request',
   },
 
-  // events: {
-  //   async signIn({ user }) {
-  //     // Activity tracking disabled for now
-  //   }
-  // }
+  events: {
+    async signIn({ user }) {
+      const db = getDatabase()
+      db.prepare(`
+        INSERT INTO user_activity (user_id, activity_type, activity_data) 
+        VALUES (?, 'sign_in', '{}')
+      `).run(user.id)
+    }
+  }
 }

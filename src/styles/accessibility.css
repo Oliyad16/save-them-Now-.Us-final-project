@@ -1,0 +1,219 @@
+/* Accessibility improvements for SaveThemNow.Jesus */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-contrast-text: #ffffff;
+    --color-contrast-bg: #000000;
+    --color-contrast-border: #ffffff;
+  }
+  
+  .text-mission-gray-300,
+  .text-mission-gray-400,
+  .text-mission-gray-500 {
+    color: var(--color-contrast-text) !important;
+  }
+  
+  .border-mission-gray-700,
+  .border-mission-gray-800 {
+    border-color: var(--color-contrast-border) !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-spin,
+  .animate-pulse,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+/* Enhanced focus indicators */
+.focus\:ring-2:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.focus\:ring-mission-primary:focus {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.5);
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  font-weight: bold;
+}
+
+.skip-to-content:focus {
+  top: 6px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus visible for keyboard navigation */
+.focus-visible\:ring-2:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Improved button states */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Link accessibility */
+a:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Form controls accessibility */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Error state accessibility */
+.error {
+  border-color: #dc2626 !important;
+  color: #dc2626;
+}
+
+.error:focus {
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.5);
+}
+
+/* Loading state accessibility */
+.loading {
+  position: relative;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* High contrast borders for cards and components */
+@media (prefers-contrast: high) {
+  .border,
+  .border-mission-gray-800,
+  .border-mission-gray-700 {
+    border-width: 2px !important;
+    border-color: #ffffff !important;
+  }
+}
+
+/* Ensure minimum touch target size */
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Text scaling support */
+@media (min-resolution: 2dppx) {
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+/* Color contrast improvements for links */
+.text-mission-primary {
+  color: #3b82f6;
+}
+
+.text-mission-primary:hover {
+  color: #1d4ed8;
+}
+
+/* Toast/notification accessibility */
+.toast {
+  role: alert;
+  aria-live: polite;
+}
+
+.toast.error {
+  aria-live: assertive;
+}
+
+/* Modal accessibility */
+.modal {
+  role: dialog;
+  aria-modal: true;
+}
+
+/* Table accessibility */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+}
+
+/* Card hover states for keyboard users */
+.card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure sufficient color contrast for all states */
+.text-mission-gray-400 {
+  color: #9ca3af; /* Improved contrast */
+}
+
+.text-mission-gray-300 {
+  color: #d1d5db; /* Improved contrast */
+}

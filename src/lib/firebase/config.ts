@@ -13,12 +13,39 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 }
 
-// Initialize Firebase only if it hasn't been initialized yet
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+// Check if Firebase config is valid
+function isFirebaseConfigValid() {
+  return !!(
+    firebaseConfig.apiKey && 
+    firebaseConfig.authDomain && 
+    firebaseConfig.projectId &&
+    firebaseConfig.apiKey !== 'your-firebase-api-key' // Check for placeholder
+  )
+}
 
-// Initialize Firebase services
-export const db = getFirestore(app)
-export const auth = getAuth(app)
-export const storage = getStorage(app)
+let app: any = null
+let db: any = null
+let auth: any = null
+let storage: any = null
 
+// Initialize Firebase only if config is valid
+if (isFirebaseConfigValid()) {
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    db = getFirestore(app)
+    auth = getAuth(app)
+    storage = getStorage(app)
+    console.log('Firebase initialized successfully')
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error)
+    app = null
+    db = null
+    auth = null
+    storage = null
+  }
+} else {
+  console.warn('Firebase config is invalid or incomplete, skipping initialization')
+}
+
+export { db, auth, storage }
 export default app
