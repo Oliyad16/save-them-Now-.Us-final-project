@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { MissingPerson } from '@/types/missing-person'
 import { MobileNavigation } from '@/components/mobile/MobileNavigation'
 import { UnifiedHeader } from '@/components/navigation/UnifiedHeader'
@@ -12,62 +13,72 @@ import { EnhancedSearch } from '@/components/search/EnhancedSearch'
 import { LoadingState, CardSkeleton } from '@/components/ui/LoadingState'
 import { ErrorBoundary, NetworkError } from '@/components/ui/ErrorBoundary'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { useApiCache } from '@/hooks/useCache'
+import CaseDetailModal from '@/components/case/CaseDetailModal'
 
-// Dynamically import counter component
+// Dynamically import counter component with better loading
 const KidnappingCounter = dynamic(() => import('@/components/KidnappingCounter'), {
-  ssr: false
+  ssr: false,
+  loading: () => <div className="h-32 bg-gradient-to-b from-black to-gray-900 animate-pulse rounded-lg flex items-center justify-center">
+    <div className="text-white text-lg">Loading...</div>
+  </div>
 })
 
-// Dynamically import the enhanced map component to avoid SSR issues with leaflet
-const EnhancedMissingPersonsMap = dynamic(() => import('@/components/map/EnhancedMissingPersonsMap'), {
+// Dynamically import components to avoid SSR issues
+const VirtualizedMap = dynamic(() => import('@/components/map/VirtualizedMap'), {
   ssr: false,
-  loading: () => <LoadingState type="map" message="Loading missing persons map..." />
+  loading: () => <LoadingState type="map" message="Loading advanced map..." />
+})
+
+const VoiceSearch = dynamic(() => import('@/components/search/VoiceSearch'), {
+  ssr: false,
+  loading: () => <div className="h-16 bg-gray-800 rounded-lg animate-pulse" />
+})
+
+const FacialSearchComponent = dynamic(() => import('@/components/ai/FacialSearchComponent'), {
+  ssr: false,
+  loading: () => <LoadingState type="ai" message="Loading AI search..." />
+})
+
+const Timeline3D = dynamic(() => import('@/components/visualization/Timeline3D'), {
+  ssr: false,
+  loading: () => <LoadingState type="visualization" message="Loading 3D timeline..." />
+})
+
+const HeatMapCanvas = dynamic(() => import('@/components/visualization/HeatMapCanvas'), {
+  ssr: false,
+  loading: () => <LoadingState type="visualization" message="Loading heat map..." />
+})
+
+const SocialShareOptimizer = dynamic(() => import('@/components/social/SocialShareOptimizer'), {
+  ssr: false,
+  loading: () => <div className="h-32 bg-gray-800 rounded-lg animate-pulse" />
 })
 
 export default function Home() {
   const { data: session } = useSession()
-  const [missingPersons, setMissingPersons] = useState<MissingPerson[]>([])
   const [filteredPersons, setFilteredPersons] = useState<MissingPerson[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [activeView, setActiveView] = useState<'map' | 'timeline' | 'heatmap' | 'ai'>('map')
+  const [selectedPerson, setSelectedPerson] = useState<MissingPerson | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showAllCases, setShowAllCases] = useState(false)
 
-  useEffect(() => {
-    loadMissingPersons()
-  }, [])
+  // Use advanced caching for API calls
+  const { data: missingPersons, loading, error } = useApiCache<{data: MissingPerson[]}>('/api/missing-persons', {
+    limit: 1000 // Reduce initial load, implement pagination later
+  }, {
+    ttl: 1000 * 60 * 10, // 10 minutes cache
+    background: true
+  })
 
-  useEffect(() => {
-    filterPersons()
-  }, [missingPersons, searchQuery, categoryFilter, statusFilter])
+  const personsData = useMemo(() => missingPersons?.data || [], [missingPersons?.data])
 
-  const loadMissingPersons = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await fetch('/api/missing-persons?limit=9000')
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      
-      const result = await response.json()
-      
-      // Handle new API response format
-      const data = result.data || result
-      setMissingPersons(data)
-    } catch (error) {
-      console.error('Error loading missing persons data:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filterPersons = () => {
-    let filtered = missingPersons
+  const filterPersons = useCallback(() => {
+    let filtered = personsData
 
     if (searchQuery) {
       filtered = filtered.filter(person => 
@@ -85,7 +96,11 @@ export default function Home() {
     }
 
     setFilteredPersons(filtered)
-  }
+  }, [personsData, searchQuery, categoryFilter, statusFilter])
+
+  useEffect(() => {
+    filterPersons()
+  }, [filterPersons])
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
@@ -95,8 +110,38 @@ export default function Home() {
     }
   }
 
-  const handleRetry = () => {
-    loadMissingPersons()
+  // Voice search handler
+  const handleVoiceSearch = (query: string) => {
+    setSearchQuery(query)
+    if (!recentSearches.includes(query)) {
+      setRecentSearches(prev => [query, ...prev].slice(0, 5))
+    }
+  }
+
+  // Person selection handler
+  const handlePersonSelect = (person: MissingPerson) => {
+    setSelectedPerson(person)
+  }
+
+  // Case detail handlers
+  const handleViewDetails = (person: MissingPerson) => {
+    setSelectedPerson(person)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    // Don't clear selectedPerson immediately to allow for smooth animation
+    setTimeout(() => setSelectedPerson(null), 300)
+  }
+
+  const handleReportInformation = (person: MissingPerson) => {
+    // TODO: Implement reporting functionality
+    alert(`Report information about ${person.name}:\n\nContact local authorities at 911 or call the National Missing Persons hotline at 1-800-THE-LOST`)
+  }
+
+  const handleViewAllCases = () => {
+    setShowAllCases(true)
   }
 
   return (
@@ -121,27 +166,206 @@ export default function Home() {
         </section>
 
         <main className="container mx-auto px-4 py-8">
-          {/* Enhanced Search Section */}
-          <Card className="mb-8 p-6">
+
+          {/* Interactive Map Section - MOVED UP */}
+          <Card className="mb-8 p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700/50 shadow-2xl">
+            <CardHeader className="pb-6">
+              <CardTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                <div className="p-3 bg-blue-600/20 rounded-xl">
+                  🗺️
+                </div>
+                <span className="bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
+                  Interactive Missing Persons Map
+                </span>
+              </CardTitle>
+              <p className="text-gray-400 mt-3">
+                Explore missing persons cases across the United States
+                <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
+                  {filteredPersons.length} cases displayed
+                </span>
+              </p>
+              {/* View Selector */}
+              <div className="flex flex-wrap gap-2 mt-4">
+                <button
+                  onClick={() => setActiveView('map')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeView === 'map'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  🗺️ Interactive Map
+                </button>
+                <button
+                  onClick={() => setActiveView('heatmap')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeView === 'heatmap'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  🔥 Heat Map
+                </button>
+                <button
+                  onClick={() => setActiveView('timeline')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeView === 'timeline'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  📅 3D Timeline
+                </button>
+              </div>
+            </CardHeader>
+            
+            {/* Error State */}
+            {error && (
+              <CardContent>
+                <div className="p-8 border-red-500/30 bg-gradient-to-br from-red-900/20 via-red-800/10 to-red-900/20 backdrop-blur-sm rounded-lg">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      ⚠️
+                    </div>
+                    <h3 className="text-xl font-bold text-red-300 mb-3">Connection Issue</h3>
+                    <p className="text-red-200/80 text-sm mb-6 max-w-md mx-auto">
+                      We&apos;re having trouble loading the missing persons data. This could be a temporary network issue.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-200 hover:scale-105"
+                      >
+                        🔄 Retry Loading
+                      </button>
+                      <button
+                        onClick={() => setActiveView('map')}
+                        className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        View Cached Data
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+
+            {/* Main Visualization Area */}
+            {!error && (
+              <CardContent className="p-4">
+                {loading && (
+                  <div className="py-16 text-center">
+                    <div className="inline-flex flex-col items-center justify-center">
+                      <div className="relative w-16 h-16 mb-6">
+                        <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
+                        <div className="absolute inset-2 bg-blue-500/40 rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
+                        <div className="absolute inset-4 bg-blue-500/60 rounded-full animate-pulse" style={{animationDelay: '1s'}} />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">Loading Visualization</h3>
+                      <p className="text-gray-400 text-sm">Preparing advanced missing persons data...</p>
+                    </div>
+                  </div>
+                )}
+                
+                {!loading && (
+                  <>
+                    {activeView === 'map' && (
+                      <VirtualizedMap 
+                        persons={filteredPersons}
+                        onPersonSelect={handlePersonSelect}
+                        className="w-full rounded-lg overflow-hidden"
+                        maxMarkers={1000}
+                        clusterDistance={0.01}
+                      />
+                    )}
+                    
+                    {activeView === 'heatmap' && (
+                      <HeatMapCanvas
+                        persons={filteredPersons}
+                        width={800}
+                        height={600}
+                        onRegionSelect={(region) => {
+                          console.log('Heat map region selected:', region)
+                          // Could show regional details modal
+                        }}
+                        className="w-full"
+                      />
+                    )}
+                    
+                    {activeView === 'timeline' && (
+                      <Timeline3D
+                        persons={filteredPersons}
+                        onPersonSelect={handlePersonSelect}
+                        height={600}
+                        className="w-full"
+                      />
+                    )}
+                  </>
+                )}
+              </CardContent>
+            )}
+          </Card>
+
+          {/* AI Facial Search - MOVED UP */}
+          <Card className="mb-8 bg-gradient-to-br from-purple-900/20 via-gray-800 to-purple-900/20 border-purple-500/30 shadow-2xl">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-                🔍 Search Missing Persons
+              <CardTitle className="text-lg font-bold text-white flex items-center gap-3">
+                <div className="p-2 bg-purple-600/20 rounded-lg">
+                  🤖
+                </div>
+                <span className="bg-gradient-to-r from-purple-300 to-white bg-clip-text text-transparent">
+                  AI Facial Recognition Search
+                </span>
+                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">
+                  Premium Feature
+                </span>
+              </CardTitle>
+              <p className="text-gray-400 text-sm mt-2">
+                Upload a photo to search for similar faces in our missing persons database using advanced AI technology
+              </p>
+            </CardHeader>
+            <CardContent>
+              <FacialSearchComponent 
+                missingPersons={personsData}
+                onResultsFound={(results) => {
+                  // Handle facial search results
+                  console.log('Facial search results:', results)
+                }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Enhanced Search Section - STREAMLINED */}
+          <Card className="mb-8 p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700/50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-bold text-white flex items-center gap-3">
+                <div className="p-2 bg-green-600/20 rounded-lg">
+                  🔍
+                </div>
+                <span className="bg-gradient-to-r from-green-300 to-white bg-clip-text text-transparent">
+                  Search & Filter Cases
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Main Search */}
+              {/* Text Search */}
               <EnhancedSearch
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search by name, location, or keywords..."
                 recentSearches={recentSearches}
-                className="mb-4"
+              />
+
+              {/* Voice Search - Compact */}
+              <VoiceSearch
+                onSearchQuery={handleVoiceSearch}
+                placeholder="Try voice search: 'Find missing children in California'"
               />
               
-              {/* Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Filters Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <select
-                  className="px-4 py-3 bg-mission-gray-800 border border-mission-gray-700 text-white rounded-lg focus:ring-2 focus:ring-mission-primary focus:border-mission-primary transition-colors"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
@@ -152,7 +376,7 @@ export default function Home() {
                 </select>
                 
                 <select
-                  className="px-4 py-3 bg-mission-gray-800 border border-mission-gray-700 text-white rounded-lg focus:ring-2 focus:ring-mission-primary focus:border-mission-primary transition-colors"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -161,9 +385,9 @@ export default function Home() {
                   <option value="Cold Case">Cold Case</option>
                 </select>
                 
-                <div className="px-4 py-3 bg-mission-gray-800 border border-mission-gray-700 rounded-lg flex items-center justify-between">
-                  <span className="text-sm text-mission-gray-300">
-                    Showing: <span className="font-semibold text-white">{filteredPersons.length}</span> of {missingPersons.length}
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg">
+                  <span className="text-sm text-gray-300">
+                    {filteredPersons.length} of {personsData.length}
                   </span>
                   {(searchQuery || categoryFilter || statusFilter) && (
                     <button
@@ -172,9 +396,9 @@ export default function Home() {
                         setCategoryFilter('')
                         setStatusFilter('')
                       }}
-                      className="text-xs text-mission-primary hover:text-blue-400 transition-colors"
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                     >
-                      Clear All
+                      Clear
                     </button>
                   )}
                 </div>
@@ -182,39 +406,36 @@ export default function Home() {
             </CardContent>
           </Card>
 
-        {/* Error State */}
-        {error && (
-          <NetworkError onRetry={handleRetry} />
-        )}
-
-        {/* Loading State */}
-        {loading && !error ? (
-          <LoadingState 
-            type="map" 
-            message="Loading missing persons data..." 
-            size="lg"
-            className="py-12"
-          />
-        ) : !error && (
-          <Card className="p-4 mb-8">
-            <EnhancedMissingPersonsMap 
-              persons={filteredPersons} 
-              currentTier='champion'
-              onUpgrade={() => window.open('/pricing', '_blank')}
-            />
-          </Card>
-        )}
+          {/* Social Sharing */}
+          {selectedPerson && (
+            <Card className="mb-8">
+              <SocialShareOptimizer
+                person={selectedPerson}
+                onShare={(platform, success) => {
+                  console.log(`Shared ${selectedPerson.name} on ${platform}:`, success)
+                }}
+              />
+            </Card>
+          )}
 
 
         {/* Recent Cases Section */}
         {!loading && !error && filteredPersons.length > 0 && (
           <Card className="p-6">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-white flex items-center gap-2">
-                📋 Recent Cases
+            <CardHeader className="pb-6">
+              <CardTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                <div className="p-2 bg-orange-500/20 rounded-lg">
+                  📋
+                </div>
+                <span className="bg-gradient-to-r from-orange-300 to-white bg-clip-text text-transparent">
+                  Recent Cases
+                </span>
               </CardTitle>
-              <p className="text-mission-gray-400 text-sm mt-1">
+              <p className="text-gray-400 mt-3">
                 Latest missing persons cases matching your search criteria
+                <span className="ml-2 px-2 py-1 bg-orange-500/20 text-orange-300 text-xs rounded-full">
+                  {filteredPersons.length} found
+                </span>
               </p>
             </CardHeader>
             <CardContent>
@@ -251,8 +472,11 @@ export default function Home() {
                       </div>
                       
                       <div className="pt-2 border-t border-mission-gray-700">
-                        <button className="text-xs text-mission-primary hover:text-blue-400 transition-colors font-medium">
-                          View Details →
+                        <button 
+                          onClick={() => handleViewDetails(person)}
+                          className="px-3 py-1 text-sm bg-mission-primary hover:bg-blue-600 text-white rounded transition-colors font-medium"
+                        >
+                          View Details
                         </button>
                       </div>
                     </div>
@@ -260,38 +484,126 @@ export default function Home() {
                 ))}
               </div>
               
+              {/* Expandable Additional Cases */}
               {filteredPersons.length > 6 && (
-                <div className="text-center mt-6">
-                  <button className="text-mission-primary hover:text-blue-400 transition-colors font-medium">
-                    View All {filteredPersons.length} Cases →
-                  </button>
-                </div>
+                <>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      height: showAllCases ? "auto" : 0,
+                      opacity: showAllCases ? 1 : 0
+                    }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                      {filteredPersons.slice(6).map((person) => (
+                        <Card 
+                          key={person.id} 
+                          className="p-4 hover:border-mission-gray-600 transition-all duration-200 cursor-pointer group"
+                          hoverable
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <h3 className="font-semibold text-lg text-white group-hover:text-mission-primary transition-colors">
+                                {person.name}
+                              </h3>
+                              <span className={`inline-flex px-2 py-1 text-xs rounded-full font-medium ${
+                                person.category === 'Missing Children' 
+                                  ? 'bg-mission-secondary/20 text-mission-secondary border border-mission-secondary/30' 
+                                  : person.category === 'Missing Veterans'
+                                  ? 'bg-mission-accent/20 text-mission-accent border border-mission-accent/30'
+                                  : 'bg-mission-primary/20 text-mission-primary border border-mission-primary/30'
+                              }`}>
+                                {person.category?.replace('Missing ', '')}
+                              </span>
+                            </div>
+                            
+                            <div className="space-y-1 text-sm">
+                              <p className="text-mission-gray-300 flex items-center gap-2">
+                                📅 <span>{person.reportedMissing}</span>
+                              </p>
+                              <p className="text-mission-gray-300 flex items-center gap-2">
+                                📍 <span>{person.location}</span>
+                              </p>
+                            </div>
+                            
+                            <div className="pt-2 border-t border-mission-gray-700">
+                              <button 
+                                onClick={() => handleViewDetails(person)}
+                                className="px-3 py-1 text-sm bg-mission-primary hover:bg-blue-600 text-white rounded transition-colors font-medium"
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </motion.div>
+                  
+                  <div className="text-center mt-6">
+                    <button 
+                      onClick={() => setShowAllCases(!showAllCases)}
+                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium"
+                    >
+                      {showAllCases ? 'Show Less' : `View All ${filteredPersons.length} Cases`}
+                    </button>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
         )}
 
         {/* Empty State */}
-        {!loading && !error && filteredPersons.length === 0 && missingPersons.length > 0 && (
-          <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-semibold text-white mb-2">No Results Found</h3>
-            <p className="text-mission-gray-400 mb-4">
-              No missing persons match your current search criteria.
+        {!loading && !error && filteredPersons.length === 0 && personsData.length > 0 && (
+          <Card className="p-12 text-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700/50">
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 bg-blue-500/10 rounded-full" />
+              <div className="absolute inset-3 bg-blue-500/20 rounded-full" />
+              <div className="flex items-center justify-center w-full h-full text-4xl">
+                🔍
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">No Matches Found</h3>
+            <p className="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+              We couldn’t find any missing persons matching your search criteria. Try adjusting your filters or search terms.
             </p>
-            <button
-              onClick={() => {
-                setSearchQuery('')
-                setCategoryFilter('')
-                setStatusFilter('')
-              }}
-              className="text-mission-primary hover:text-blue-400 transition-colors font-medium"
-            >
-              Clear All Filters
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setCategoryFilter('')
+                  setStatusFilter('')
+                }}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 hover:scale-105"
+              >
+                🔄 Clear All Filters
+              </button>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+              >
+                🎯 Reset Search
+              </button>
+            </div>
           </Card>
         )}
+
       </main>
+
+      {/* Case Detail Modal */}
+      <CaseDetailModal
+        person={selectedPerson}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onShare={(platform) => {
+          console.log(`Shared ${selectedPerson?.name} on ${platform}`)
+          // Could implement analytics tracking here
+        }}
+        onReport={handleReportInformation}
+      />
     </div>
   )
 }

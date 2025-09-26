@@ -72,7 +72,10 @@ export const hybridAuthConfig: NextAuthOptions = {
       }
     }),
     
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+    ...(process.env.GOOGLE_CLIENT_ID && 
+        process.env.GOOGLE_CLIENT_SECRET && 
+        process.env.GOOGLE_CLIENT_ID !== 'your-google-client-id' && 
+        process.env.GOOGLE_CLIENT_SECRET !== 'your-google-client-secret' ? [
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET

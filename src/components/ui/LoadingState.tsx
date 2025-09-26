@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface LoadingStateProps {
-  type?: 'spinner' | 'skeleton' | 'dots' | 'pulse' | 'map'
+  type?: 'spinner' | 'skeleton' | 'dots' | 'pulse' | 'map' | 'ai' | 'visualization'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   message?: string
   className?: string
@@ -166,6 +166,10 @@ export function LoadingState({
         return <PulseLoader />
       case 'map':
         return <MapLoader />
+      case 'ai':
+        return <LoadingDots />
+      case 'visualization':
+        return <PulseLoader />
       default:
         return <LoadingSpinner />
     }

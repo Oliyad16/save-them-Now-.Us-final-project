@@ -69,7 +69,7 @@ class AutomatedScheduler:
                 'enabled': True
             },
             'incremental_update': {
-                'trigger': IntervalTrigger(hours=6),  # Every 6 hours
+                'trigger': IntervalTrigger(hours=3),  # Every 3 hours (increased from 6)
                 'function': self.run_incremental_update,
                 'description': 'Incremental data updates',
                 'priority': 2,
@@ -83,7 +83,7 @@ class AutomatedScheduler:
                 'enabled': True
             },
             'data_freshness_check': {
-                'trigger': IntervalTrigger(minutes=30),  # Every 30 minutes
+                'trigger': IntervalTrigger(minutes=10),  # Every 10 minutes (increased from 30)
                 'function': self.check_data_freshness,
                 'description': 'Monitor data freshness and trigger updates',
                 'priority': 4,
@@ -240,4 +240,262 @@ class AutomatedScheduler:
             staleness_info = self.staleness_monitor.check_and_alert()
             
             # Trigger updates based on staleness level
-            if staleness_info['level'] in ['critical', 'emergency']:\n                logger.logger.warning(f\"Data staleness level: {staleness_info['level']}, triggering update\")\n                \n                # Trigger immediate incremental update\n                self.stats['data_freshness_triggers'] += 1\n                await self.run_incremental_update()\n                \n                # If still critical after incremental, trigger full pipeline\n                if staleness_info['level'] == 'emergency':\n                    logger.logger.critical(\"Emergency staleness level, triggering full pipeline\")\n                    await self.run_full_pipeline()\n            \n            return staleness_info\n            \n        except Exception as e:\n            logger.logger.error(f\"Data freshness check failed: {e}\")\n            raise\n    \n    async def monitor_urgent_cases(self):\n        \"\"\"Monitor for urgent missing children cases and prioritize updates.\"\"\"\n        try:\n            # Query for recent missing children cases\n            urgent_cases = self.get_urgent_cases()\n            \n            if urgent_cases:\n                logger.logger.info(f\"Found {len(urgent_cases)} urgent cases\")\n                \n                # Trigger immediate targeted collection for urgent cases\n                await self.process_urgent_cases(urgent_cases)\n                self.stats['urgent_cases_processed'] += len(urgent_cases)\n            \n            return {'urgent_cases_found': len(urgent_cases)}\n            \n        except Exception as e:\n            logger.logger.error(f\"Urgent case monitoring failed: {e}\")\n            raise\n    \n    async def system_health_check(self):\n        \"\"\"Perform system health and performance monitoring.\"\"\"\n        try:\n            health_info = {\n                'timestamp': datetime.now().isoformat(),\n                'scheduler_status': 'running' if self.scheduler.running else 'stopped',\n                'active_jobs': len(self.scheduler.get_jobs()),\n                'stats': self.stats.copy()\n            }\n            \n            # Check database connectivity\n            try:\n                conn = sqlite3.connect(self.db_path)\n                cursor = conn.cursor()\n                cursor.execute(\"SELECT COUNT(*) FROM missing_persons\")\n                health_info['database_records'] = cursor.fetchone()[0]\n                conn.close()\n                health_info['database_status'] = 'healthy'\n            except Exception as e:\n                health_info['database_status'] = f'error: {e}'\n            \n            # Check disk space\n            disk_usage = self.check_disk_space()\n            health_info['disk_usage'] = disk_usage\n            \n            # Log health summary\n            logger.logger.info(f\"System health check: {health_info['database_status']}, \"\n                             f\"{health_info['database_records']} records, \"\n                             f\"{disk_usage['free_gb']:.1f}GB free\")\n            \n            return health_info\n            \n        except Exception as e:\n            logger.logger.error(f\"System health check failed: {e}\")\n            raise\n    \n    def get_urgent_cases(self) -> List[Dict[str, Any]]:\n        \"\"\"Get urgent missing children cases from the last 48 hours.\"\"\"\n        try:\n            conn = sqlite3.connect(self.db_path)\n            conn.row_factory = sqlite3.Row\n            \n            cursor = conn.cursor()\n            cursor.execute(\"\"\"\n                SELECT * FROM missing_persons \n                WHERE category = 'Missing Children'\n                  AND age < 18\n                  AND datetime(created_at) > datetime('now', '-48 hours')\n                ORDER BY created_at DESC\n                LIMIT 50\n            \"\"\")\n            \n            cases = [dict(row) for row in cursor.fetchall()]\n            conn.close()\n            \n            return cases\n            \n        except Exception as e:\n            logger.logger.error(f\"Error querying urgent cases: {e}\")\n            return []\n    \n    async def process_urgent_cases(self, cases: List[Dict[str, Any]]):\n        \"\"\"Process urgent cases with high priority.\"\"\"\n        logger.logger.info(f\"Processing {len(cases)} urgent cases\")\n        \n        # For now, just log the urgent cases\n        # In a real system, this would trigger immediate notifications,\n        # social media alerts, etc.\n        \n        for case in cases:\n            logger.logger.warning(\n                f\"URGENT: Missing child {case.get('name', 'Unknown')} \"\n                f\"from {case.get('location', 'Unknown location')}\"\n            )\n    \n    async def run_selective_collectors(self, pipeline, collector_names: List[str]) -> Dict[str, Any]:\n        \"\"\"Run only specific collectors for targeted updates.\"\"\"\n        # This would be implemented to run only specific data collectors\n        # For now, return a mock result\n        return {\n            'total_collected': 0,\n            'total_processed': 0,\n            'collectors_run': collector_names\n        }\n    \n    def update_data_timestamps(self):\n        \"\"\"Update data file timestamps for freshness tracking.\"\"\"\n        try:\n            csv_path = Path(self.config.get('csv_path', 'missing-persons.csv'))\n            if csv_path.exists():\n                # Touch the file to update its modification time\n                csv_path.touch()\n                logger.logger.debug(\"Updated CSV timestamp\")\n        except Exception as e:\n            logger.logger.error(f\"Failed to update data timestamps: {e}\")\n    \n    def check_disk_space(self) -> Dict[str, float]:\n        \"\"\"Check available disk space.\"\"\"\n        try:\n            if platform.system() == \"Windows\":\n                import shutil\n                total, used, free = shutil.disk_usage(\".\")\n                return {\n                    'total_gb': total / (1024**3),\n                    'used_gb': used / (1024**3),\n                    'free_gb': free / (1024**3),\n                    'usage_percent': (used / total) * 100\n                }\n            else:\n                result = subprocess.run(['df', '-h', '.'], capture_output=True, text=True)\n                # Parse df output for Unix systems\n                return {'free_gb': 0, 'usage_percent': 0}  # Simplified\n        except Exception:\n            return {'free_gb': 0, 'usage_percent': 0}\n    \n    def job_executed_listener(self, event):\n        \"\"\"Handle successful job execution.\"\"\"\n        self.stats['jobs_executed'] += 1\n        logger.logger.info(f\"Job completed: {event.job_id}\")\n    \n    def job_error_listener(self, event):\n        \"\"\"Handle job execution errors.\"\"\"\n        self.stats['jobs_failed'] += 1\n        logger.logger.error(f\"Job failed: {event.job_id} - {event.exception}\")\n    \n    def job_missed_listener(self, event):\n        \"\"\"Handle missed job executions.\"\"\"\n        self.stats['jobs_missed'] += 1\n        logger.logger.warning(f\"Job missed: {event.job_id}\")\n    \n    def start(self):\n        \"\"\"Start the automated scheduler.\"\"\"\n        logger.logger.info(\"Starting automated scheduler\")\n        \n        try:\n            self.initialize_jobs()\n            self.scheduler.start()\n            logger.logger.info(\"Automated scheduler started successfully\")\n            \n            # Log scheduled jobs\n            jobs = self.scheduler.get_jobs()\n            for job in jobs:\n                logger.logger.info(f\"Active job: {job.id} - next run: {job.next_run_time}\")\n            \n        except Exception as e:\n            logger.logger.error(f\"Failed to start scheduler: {e}\")\n            raise\n    \n    def stop(self):\n        \"\"\"Stop the automated scheduler.\"\"\"\n        logger.logger.info(\"Stopping automated scheduler\")\n        \n        try:\n            self.scheduler.shutdown(wait=True)\n            logger.logger.info(\"Automated scheduler stopped\")\n        except Exception as e:\n            logger.logger.error(f\"Error stopping scheduler: {e}\")\n    \n    def get_status(self) -> Dict[str, Any]:\n        \"\"\"Get scheduler status and statistics.\"\"\"\n        jobs = self.scheduler.get_jobs()\n        \n        return {\n            'running': self.scheduler.running,\n            'active_jobs': len(jobs),\n            'next_jobs': [\n                {\n                    'id': job.id,\n                    'name': job.name,\n                    'next_run': job.next_run_time.isoformat() if job.next_run_time else None\n                }\n                for job in jobs[:5]  # Show next 5 jobs\n            ],\n            'statistics': self.stats,\n            'data_freshness': self.staleness_monitor.get_staleness_summary()\n        }\n\nasync def main():\n    \"\"\"Main entry point for running the automated scheduler.\"\"\"\n    import argparse\n    \n    parser = argparse.ArgumentParser(description=\"Automated Missing Persons Data Scheduler\")\n    parser.add_argument('--config', help='Configuration file path')\n    parser.add_argument('--daemon', action='store_true', help='Run as daemon')\n    \n    args = parser.parse_args()\n    \n    # Default configuration\n    config = {\n        'database_path': 'database/app.db',\n        'scheduler_db_path': 'scheduler.db',\n        'csv_path': 'missing-persons.csv',\n        'alerts': {\n            'webhook_url': '',\n            'email': {'enabled': False}\n        }\n    }\n    \n    scheduler = AutomatedScheduler(config)\n    \n    try:\n        scheduler.start()\n        \n        if args.daemon:\n            # Run indefinitely\n            logger.logger.info(\"Running in daemon mode - press Ctrl+C to stop\")\n            while True:\n                await asyncio.sleep(60)\n        else:\n            # Run for a short time for testing\n            logger.logger.info(\"Running for 5 minutes for testing\")\n            await asyncio.sleep(300)\n            \n    except KeyboardInterrupt:\n        logger.logger.info(\"Received interrupt signal\")\n    finally:\n        scheduler.stop()\n\nif __name__ == '__main__':\n    asyncio.run(main())
+            if staleness_info['level'] in ['critical', 'emergency']:
+                logger.logger.warning(f"Data staleness level: {staleness_info['level']}, triggering update")
+                
+                # Trigger immediate incremental update
+                self.stats['data_freshness_triggers'] += 1
+                await self.run_incremental_update()
+                
+                # If still critical after incremental, trigger full pipeline
+                if staleness_info['level'] == 'emergency':
+                    logger.logger.critical("Emergency staleness level, triggering full pipeline")
+                    await self.run_full_pipeline()
+            
+            return staleness_info
+            
+        except Exception as e:
+            logger.logger.error(f"Data freshness check failed: {e}")
+            raise
+    
+    async def monitor_urgent_cases(self):
+        """Monitor for urgent missing children cases and prioritize updates."""
+        try:
+            # Query for recent missing children cases
+            urgent_cases = self.get_urgent_cases()
+            
+            if urgent_cases:
+                logger.logger.info(f"Found {len(urgent_cases)} urgent cases")
+                
+                # Trigger immediate targeted collection for urgent cases
+                await self.process_urgent_cases(urgent_cases)
+                self.stats['urgent_cases_processed'] += len(urgent_cases)
+            
+            return {'urgent_cases_found': len(urgent_cases)}
+            
+        except Exception as e:
+            logger.logger.error(f"Urgent case monitoring failed: {e}")
+            raise
+    
+    async def system_health_check(self):
+        """Perform system health and performance monitoring."""
+        try:
+            health_info = {
+                'timestamp': datetime.now().isoformat(),
+                'scheduler_status': 'running' if self.scheduler.running else 'stopped',
+                'active_jobs': len(self.scheduler.get_jobs()),
+                'stats': self.stats.copy()
+            }
+            
+            # Check database connectivity
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM missing_persons")
+                health_info['database_records'] = cursor.fetchone()[0]
+                conn.close()
+                health_info['database_status'] = 'healthy'
+            except Exception as e:
+                health_info['database_status'] = f'error: {e}'
+            
+            # Check disk space
+            disk_usage = self.check_disk_space()
+            health_info['disk_usage'] = disk_usage
+            
+            # Log health summary
+            logger.logger.info(f"System health check: {health_info['database_status']}, "
+                             f"{health_info['database_records']} records, "
+                             f"{disk_usage['free_gb']:.1f}GB free")
+            
+            return health_info
+            
+        except Exception as e:
+            logger.logger.error(f"System health check failed: {e}")
+            raise
+    
+    def get_urgent_cases(self) -> List[Dict[str, Any]]:
+        """Get urgent missing children cases from the last 48 hours."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT * FROM missing_persons 
+                WHERE category = 'Missing Children'
+                  AND age < 18
+                  AND datetime(created_at) > datetime('now', '-48 hours')
+                ORDER BY created_at DESC
+                LIMIT 50
+            """)
+            
+            cases = [dict(row) for row in cursor.fetchall()]
+            conn.close()
+            
+            return cases
+            
+        except Exception as e:
+            logger.logger.error(f"Error querying urgent cases: {e}")
+            return []
+    
+    async def process_urgent_cases(self, cases: List[Dict[str, Any]]):
+        """Process urgent cases with high priority."""
+        logger.logger.info(f"Processing {len(cases)} urgent cases")
+        
+        # For now, just log the urgent cases
+        # In a real system, this would trigger immediate notifications,
+        # social media alerts, etc.
+        
+        for case in cases:
+            logger.logger.warning(
+                f"URGENT: Missing child {case.get('name', 'Unknown')} "
+                f"from {case.get('location', 'Unknown location')}"
+            )
+    
+    async def run_selective_collectors(self, pipeline, collector_names: List[str]) -> Dict[str, Any]:
+        """Run only specific collectors for targeted updates."""
+        # This would be implemented to run only specific data collectors
+        # For now, return a mock result
+        return {
+            'total_collected': 0,
+            'total_processed': 0,
+            'collectors_run': collector_names
+        }
+    
+    def update_data_timestamps(self):
+        """Update data file timestamps for freshness tracking."""
+        try:
+            csv_path = Path(self.config.get('csv_path', 'missing-persons.csv'))
+            if csv_path.exists():
+                # Touch the file to update its modification time
+                csv_path.touch()
+                logger.logger.debug("Updated CSV timestamp")
+        except Exception as e:
+            logger.logger.error(f"Failed to update data timestamps: {e}")
+    
+    def check_disk_space(self) -> Dict[str, float]:
+        """Check available disk space."""
+        try:
+            if platform.system() == "Windows":
+                import shutil
+                total, used, free = shutil.disk_usage(".")
+                return {
+                    'total_gb': total / (1024**3),
+                    'used_gb': used / (1024**3),
+                    'free_gb': free / (1024**3),
+                    'usage_percent': (used / total) * 100
+                }
+            else:
+                result = subprocess.run(['df', '-h', '.'], capture_output=True, text=True)
+                # Parse df output for Unix systems
+                return {'free_gb': 0, 'usage_percent': 0}  # Simplified
+        except Exception:
+            return {'free_gb': 0, 'usage_percent': 0}
+    
+    def job_executed_listener(self, event):
+        """Handle successful job execution."""
+        self.stats['jobs_executed'] += 1
+        logger.logger.info(f"Job completed: {event.job_id}")
+    
+    def job_error_listener(self, event):
+        """Handle job execution errors."""
+        self.stats['jobs_failed'] += 1
+        logger.logger.error(f"Job failed: {event.job_id} - {event.exception}")
+    
+    def job_missed_listener(self, event):
+        """Handle missed job executions."""
+        self.stats['jobs_missed'] += 1
+        logger.logger.warning(f"Job missed: {event.job_id}")
+    
+    def start(self):
+        """Start the automated scheduler."""
+        logger.logger.info("Starting automated scheduler")
+        
+        try:
+            self.initialize_jobs()
+            self.scheduler.start()
+            logger.logger.info("Automated scheduler started successfully")
+            
+            # Log scheduled jobs
+            jobs = self.scheduler.get_jobs()
+            for job in jobs:
+                logger.logger.info(f"Active job: {job.id} - next run: {job.next_run_time}")
+            
+        except Exception as e:
+            logger.logger.error(f"Failed to start scheduler: {e}")
+            raise
+    
+    def stop(self):
+        """Stop the automated scheduler."""
+        logger.logger.info("Stopping automated scheduler")
+        
+        try:
+            self.scheduler.shutdown(wait=True)
+            logger.logger.info("Automated scheduler stopped")
+        except Exception as e:
+            logger.logger.error(f"Error stopping scheduler: {e}")
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get scheduler status and statistics."""
+        jobs = self.scheduler.get_jobs()
+        
+        return {
+            'running': self.scheduler.running,
+            'active_jobs': len(jobs),
+            'next_jobs': [
+                {
+                    'id': job.id,
+                    'name': job.name,
+                    'next_run': job.next_run_time.isoformat() if job.next_run_time else None
+                }
+                for job in jobs[:5]  # Show next 5 jobs
+            ],
+            'statistics': self.stats,
+            'data_freshness': self.staleness_monitor.get_staleness_summary()
+        }
+
+
+async def main():
+    """Main entry point for running the automated scheduler."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Automated Missing Persons Data Scheduler")
+    parser.add_argument('--config', help='Configuration file path')
+    parser.add_argument('--daemon', action='store_true', help='Run as daemon')
+    
+    args = parser.parse_args()
+    
+    # Default configuration
+    config = {
+        'database_path': 'database/app.db',
+        'scheduler_db_path': 'scheduler.db',
+        'csv_path': 'missing-persons.csv',
+        'alerts': {
+            'webhook_url': '',
+            'email': {'enabled': False}
+        }
+    }
+    
+    scheduler = AutomatedScheduler(config)
+    
+    try:
+        scheduler.start()
+        
+        if args.daemon:
+            # Run indefinitely
+            logger.logger.info("Running in daemon mode - press Ctrl+C to stop")
+            while True:
+                await asyncio.sleep(60)
+        else:
+            # Run for a short time for testing
+            logger.logger.info("Running for 5 minutes for testing")
+            await asyncio.sleep(300)
+            
+    except KeyboardInterrupt:
+        logger.logger.info("Received interrupt signal")
+    finally:
+        scheduler.stop()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

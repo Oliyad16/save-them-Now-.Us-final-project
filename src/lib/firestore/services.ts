@@ -104,13 +104,16 @@ export class MissingPersonsService {
       throw new Error('Firestore is not available')
     }
     
-    const { limit: pageLimit = 100, offset = 0 } = options
+    const { limit: pageLimit = 5000, offset = 0 } = options
+    
+    // Cap at 5000 records maximum
+    const actualLimit = Math.min(pageLimit, 5000)
     
     try {
       let q = query(
         collection(db, this.collectionName),
         orderBy('dateMissing', 'desc'),
-        limit(pageLimit)
+        limit(actualLimit)
       )
 
       // Handle offset-based pagination
@@ -127,7 +130,7 @@ export class MissingPersonsService {
             collection(db, this.collectionName),
             orderBy('dateMissing', 'desc'),
             startAfter(lastVisible),
-            limit(pageLimit)
+            limit(actualLimit)
           )
         }
       }
@@ -142,9 +145,9 @@ export class MissingPersonsService {
         data,
         meta: {
           total: data.length, // Note: For exact total, need a separate count query
-          limit: pageLimit,
+          limit: actualLimit,
           offset,
-          hasMore: data.length === pageLimit
+          hasMore: data.length === actualLimit
         }
       }
     } catch (error) {

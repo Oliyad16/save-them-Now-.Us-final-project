@@ -25,7 +25,7 @@ export default function KidnappingCounter() {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [])
+  }, [REPORTS_PER_SECOND])
   
   const formatNumber = (num: number): string => {
     return Math.floor(num).toLocaleString()

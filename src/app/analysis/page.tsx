@@ -166,18 +166,6 @@ export default function Analysis() {
               with special focus on women and children safety.
             </motion.p>
             
-            {/* AI Status Indicator */}
-            <motion.div 
-              className="flex justify-center items-center mt-6"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-            >
-              <div className="flex items-center gap-3 bg-mission-gray-900 border border-mission-gray-700 rounded-lg px-4 py-2">
-                <div className="w-2 h-2 bg-mission-primary rounded-full animate-pulse"></div>
-                <span className="text-mission-primary font-mono text-sm">AI ANALYSIS ACTIVE</span>
-              </div>
-            </motion.div>
           </motion.section>
 
           {/* Risk Filter */}
@@ -344,7 +332,7 @@ export default function Analysis() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 2.6 }}
                   >
-                    <h3 className="text-lg font-semibold text-mission-primary mb-4">👩‍🦰 For Women's Safety</h3>
+                    <h3 className="text-lg font-semibold text-mission-primary mb-4">👩‍🦰 For Women&apos;s Safety</h3>
                     <ul className="space-y-2 text-mission-gray-300">
                       <li>• Avoid isolated areas, especially during late hours</li>
                       <li>• Share location with trusted contacts when traveling</li>
@@ -358,12 +346,12 @@ export default function Analysis() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 2.8 }}
                   >
-                    <h3 className="text-lg font-semibold text-pink-400 mb-4">👶 For Children's Safety</h3>
+                    <h3 className="text-lg font-semibold text-pink-400 mb-4">👶 For Children&apos;s Safety</h3>
                     <ul className="space-y-2 text-mission-gray-300">
                       <li>• Maintain constant supervision in high-risk areas</li>
                       <li>• Teach children about stranger danger</li>
                       <li>• Establish meeting points in crowded locations</li>
-                      <li>• Monitor children's online activities and location</li>
+                      <li>• Monitor children&apos;s online activities and location</li>
                       <li>• Ensure children know their full address and phone number</li>
                     </ul>
                   </motion.div>

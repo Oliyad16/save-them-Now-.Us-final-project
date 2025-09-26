@@ -231,7 +231,7 @@ export function BadgeUnlockCelebration({
                     Badge Unlocked!
                   </h1>
                   <p className="text-mission-gray-300">
-                    You've earned a new achievement
+                    You&apos;ve earned a new achievement
                   </p>
                 </motion.div>
 
@@ -294,7 +294,7 @@ export function BadgeUnlockCelebration({
                     className="mb-6 p-4 bg-mission-gray-800/50 rounded-lg"
                   >
                     <p className="text-sm text-mission-gray-300 italic">
-                      "{definition.story}"
+                      &quot;{definition.story}&quot;
                     </p>
                   </motion.div>
                 )}

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "^7.9.0",
+    "@tensorflow/tfjs": "^4.15.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/leaflet": "^1.9.12",
@@ -27,15 +28,18 @@
     "leaflet": "^1.9.4",
     "next": "^14.2.32",
     "next-auth": "^4.24.11",
+    "node-cron": "^4.2.1",
     "react": "^18",
     "react-dom": "^18",
     "react-leaflet": "^4.2.1",
+    "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "stripe": "^18.5.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

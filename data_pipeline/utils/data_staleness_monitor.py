@@ -6,8 +6,8 @@ Monitors data freshness and sends alerts when data becomes stale.
 import json
 import smtplib
 from datetime import datetime, timedelta
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText as MimeText
+from email.mime.multipart import MIMEMultipart as MimeMultipart
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import requests
@@ -24,11 +24,11 @@ class DataStalenessMonitor:
         self.csv_path = Path(config.get('csv_path', 'missing-persons.csv'))
         self.database_path = Path(config.get('database_path', 'database/app.db'))
         
-        # Staleness thresholds (in hours)
+        # Staleness thresholds (in hours) - Optimized for faster detection
         self.thresholds = {
-            'warning': config.get('warning_threshold_hours', 24),
-            'critical': config.get('critical_threshold_hours', 48),
-            'emergency': config.get('emergency_threshold_hours', 72)
+            'warning': config.get('warning_threshold_hours', 6),   # Reduced from 24h
+            'critical': config.get('critical_threshold_hours', 12), # Reduced from 48h  
+            'emergency': config.get('emergency_threshold_hours', 24) # Reduced from 72h
         }
         
         # Alert configuration

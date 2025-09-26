@@ -4,7 +4,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { parse } from 'csv-parse/sync'
 import { MissingPerson } from '@/types/missing-person'
-import { loadGeocache } from '@/lib/geocoding'
+import { loadGeocache, enhancedGeocodingService } from '@/lib/geocoding/enhanced-geocoding'
 
 // Cache for geocoded locations (fallback to CSV if Firestore is empty)
 let geocacheData: Record<string, { lat: number; lon: number; timestamp?: number }> = {}
@@ -68,10 +68,38 @@ function mapRowToMissingPerson(row: any, index: number): MissingPerson {
   }
 }
 
+function addGeocodingToFirestoreRecord(item: any): any {
+  // Check if record already has coordinates
+  if (item.latitude && item.longitude) {
+    return item
+  }
+
+  // Try to get coordinates from geocache
+  const city = item.city || ''
+  const state = item.state || ''
+  if (city && state) {
+    const cacheKey = `${city},${state}`.toLowerCase()
+    if (geocacheData[cacheKey]) {
+      return {
+        ...item,
+        latitude: geocacheData[cacheKey].lat,
+        longitude: geocacheData[cacheKey].lon
+      }
+    }
+  }
+
+  return item
+}
+
 async function getFromFirestore(request: NextRequest) {
+  // Load geocache if not already loaded
+  if (Object.keys(geocacheData).length === 0) {
+    geocacheData = await loadGeocache()
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get('limit') || '100')
+    const limit = parseInt(searchParams.get('limit') || '5000')
     const offset = parseInt(searchParams.get('offset') || '0')
     const category = searchParams.get('category')
     const search = searchParams.get('search')
@@ -82,22 +110,25 @@ async function getFromFirestore(request: NextRequest) {
       // Search functionality
       const data = await missingPersonsService.search(search, { limit, offset })
       result = {
-        data: data.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          date: item.dateMissing || item.dateReported,
-          status: item.status,
-          category: item.category,
-          reportedMissing: `Reported Missing ${item.dateMissing || item.dateReported}`,
-          location: item.location,
-          latitude: item.latitude,
-          longitude: item.longitude,
-          age: item.age,
-          gender: item.gender,
-          ethnicity: item.ethnicity,
-          caseNumber: item.caseNumber,
-          description: item.description
-        })),
+        data: data.map((item: any) => {
+          const geocodedItem = addGeocodingToFirestoreRecord(item)
+          return {
+            id: geocodedItem.id,
+            name: geocodedItem.name,
+            date: geocodedItem.dateMissing || geocodedItem.dateReported,
+            status: geocodedItem.status,
+            category: geocodedItem.category,
+            reportedMissing: `Reported Missing ${geocodedItem.dateMissing || geocodedItem.dateReported}`,
+            location: geocodedItem.location,
+            latitude: geocodedItem.latitude,
+            longitude: geocodedItem.longitude,
+            age: geocodedItem.age,
+            gender: geocodedItem.gender,
+            ethnicity: geocodedItem.ethnicity,
+            caseNumber: geocodedItem.caseNumber,
+            description: geocodedItem.description
+          }
+        }),
         meta: {
           total: data.length,
           limit,
@@ -110,22 +141,25 @@ async function getFromFirestore(request: NextRequest) {
       // Category filtering
       const data = await missingPersonsService.getByCategory(category, { limit, offset })
       result = {
-        data: data.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          date: item.dateMissing || item.dateReported,
-          status: item.status,
-          category: item.category,
-          reportedMissing: `Reported Missing ${item.dateMissing || item.dateReported}`,
-          location: item.location,
-          latitude: item.latitude,
-          longitude: item.longitude,
-          age: item.age,
-          gender: item.gender,
-          ethnicity: item.ethnicity,
-          caseNumber: item.caseNumber,
-          description: item.description
-        })),
+        data: data.map((item: any) => {
+          const geocodedItem = addGeocodingToFirestoreRecord(item)
+          return {
+            id: geocodedItem.id,
+            name: geocodedItem.name,
+            date: geocodedItem.dateMissing || geocodedItem.dateReported,
+            status: geocodedItem.status,
+            category: geocodedItem.category,
+            reportedMissing: `Reported Missing ${geocodedItem.dateMissing || geocodedItem.dateReported}`,
+            location: geocodedItem.location,
+            latitude: geocodedItem.latitude,
+            longitude: geocodedItem.longitude,
+            age: geocodedItem.age,
+            gender: geocodedItem.gender,
+            ethnicity: geocodedItem.ethnicity,
+            caseNumber: geocodedItem.caseNumber,
+            description: geocodedItem.description
+          }
+        }),
         meta: {
           total: data.length,
           limit,
@@ -140,22 +174,25 @@ async function getFromFirestore(request: NextRequest) {
       
       // Transform Firestore data to match expected MissingPerson interface
       result = {
-        data: firestoreResult.data.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          date: item.dateMissing || item.dateReported,
-          status: item.status,
-          category: item.category,
-          reportedMissing: `Reported Missing ${item.dateMissing || item.dateReported}`,
-          location: item.location,
-          latitude: item.latitude,
-          longitude: item.longitude,
-          age: item.age,
-          gender: item.gender,
-          ethnicity: item.ethnicity,
-          caseNumber: item.caseNumber,
-          description: item.description
-        })),
+        data: firestoreResult.data.map((item: any) => {
+          const geocodedItem = addGeocodingToFirestoreRecord(item)
+          return {
+            id: geocodedItem.id,
+            name: geocodedItem.name,
+            date: geocodedItem.dateMissing || geocodedItem.dateReported,
+            status: geocodedItem.status,
+            category: geocodedItem.category,
+            reportedMissing: `Reported Missing ${geocodedItem.dateMissing || geocodedItem.dateReported}`,
+            location: geocodedItem.location,
+            latitude: geocodedItem.latitude,
+            longitude: geocodedItem.longitude,
+            age: geocodedItem.age,
+            gender: geocodedItem.gender,
+            ethnicity: geocodedItem.ethnicity,
+            caseNumber: geocodedItem.caseNumber,
+            description: geocodedItem.description
+          }
+        }),
         meta: {
           ...firestoreResult.meta,
           source: 'firestore'
@@ -207,7 +244,7 @@ async function getFromCSV(request: NextRequest) {
 
   // Apply pagination if requested
   const searchParams = request.nextUrl.searchParams
-  const limit = parseInt(searchParams.get('limit') || '100')
+  const limit = parseInt(searchParams.get('limit') || '5000')
   const offset = parseInt(searchParams.get('offset') || '0')
 
   const paginatedResults = missingPersons.slice(offset, offset + limit)
