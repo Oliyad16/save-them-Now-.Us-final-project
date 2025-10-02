@@ -6,11 +6,18 @@ import { UnifiedHeader } from '@/components/navigation/UnifiedHeader'
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import { LoadingState, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { motion } from 'framer-motion'
+import { MissingPerson } from '@/types/missing-person'
+import { useApiCache } from '@/hooks/useCache'
 
 // Dynamically import components to avoid SSR issues
 const RiskAnalysisMap = dynamic(() => import('@/components/RiskAnalysisMap'), {
   ssr: false,
   loading: () => <LoadingState type="map" message="Loading risk analysis map..." />
+})
+
+const FacialSearchComponent = dynamic(() => import('@/components/ai/FacialSearchComponent'), {
+  ssr: false,
+  loading: () => <LoadingState type="ai" message="Loading AI search..." />
 })
 
 interface RiskArea {
@@ -30,6 +37,16 @@ export default function Analysis() {
   const [riskAreas, setRiskAreas] = useState<RiskArea[]>([])
   const [selectedRisk, setSelectedRisk] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL')
   const [loading, setLoading] = useState(true)
+
+  // Fetch missing persons data for facial search
+  const { data: missingPersons } = useApiCache<{data: MissingPerson[]}>('/api/missing-persons', {
+    limit: 1500
+  }, {
+    ttl: 1000 * 60 * 10,
+    background: true
+  })
+
+  const personsData = missingPersons?.data || []
 
   useEffect(() => {
     // Simulate AI analysis data - in real implementation, this would come from an AI service
@@ -416,12 +433,47 @@ export default function Analysis() {
             </Card>
           </motion.section>
 
-          {/* Emergency Contact */}
-          <motion.section 
-            className="text-center"
+          {/* AI Facial Recognition Search - Secondary Feature */}
+          <motion.section
+            className="mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 3.8 }}
+          >
+            <Card className="bg-gradient-to-br from-purple-900/20 via-gray-800 to-purple-900/20 border-purple-500/30 p-6">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
+                  <div className="p-2 bg-purple-600/20 rounded-lg">
+                    🤖
+                  </div>
+                  <span className="bg-gradient-to-r from-purple-300 to-white bg-clip-text text-transparent">
+                    AI Facial Recognition Search
+                  </span>
+                  <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">
+                    AI Tool
+                  </span>
+                </CardTitle>
+                <p className="text-gray-400 text-sm mt-3">
+                  Use advanced AI to search for similar faces in our missing persons database
+                </p>
+              </CardHeader>
+              <CardContent>
+                <FacialSearchComponent
+                  missingPersons={personsData}
+                  onResultsFound={(results) => {
+                    console.log('Facial search results:', results)
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </motion.section>
+
+          {/* Emergency Contact */}
+          <motion.section
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 4.2 }}
           >
             <Card className="bg-mission-secondary/10 border-mission-secondary/30 p-8">
               <CardHeader>
@@ -430,20 +482,20 @@ export default function Analysis() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <motion.p 
+                <motion.p
                   className="text-lg text-mission-gray-300 leading-relaxed"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 4 }}
+                  transition={{ duration: 0.4, delay: 4.4 }}
                 >
-                  If you or someone you know is in immediate danger or has information 
+                  If you or someone you know is in immediate danger or has information
                   about a missing person, contact authorities immediately.
                 </motion.p>
-                <motion.div 
+                <motion.div
                   className="flex flex-wrap justify-center gap-4"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 4.2 }}
+                  transition={{ duration: 0.4, delay: 4.6 }}
                 >
                   {[
                     { text: 'Emergency: 911', color: 'text-mission-secondary' },
@@ -455,7 +507,7 @@ export default function Analysis() {
                       className="bg-mission-gray-900 border border-mission-gray-700 rounded-lg px-4 py-2"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: 4.4 + index * 0.1 }}
+                      transition={{ duration: 0.3, delay: 4.8 + index * 0.1 }}
                       whileHover={{ scale: 1.05 }}
                     >
                       <span className={`${contact.color} font-semibold`}>{contact.text}</span>

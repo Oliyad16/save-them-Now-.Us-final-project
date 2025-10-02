@@ -9,7 +9,6 @@ import { MissingPerson } from '@/types/missing-person'
 import { MobileNavigation } from '@/components/mobile/MobileNavigation'
 import { UnifiedHeader } from '@/components/navigation/UnifiedHeader'
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
-import { EnhancedSearch } from '@/components/search/EnhancedSearch'
 import { LoadingState, CardSkeleton } from '@/components/ui/LoadingState'
 import { ErrorBoundary, NetworkError } from '@/components/ui/ErrorBoundary'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
@@ -30,15 +29,6 @@ const MultiViewMap = dynamic(() => import('@/components/map/MultiViewMap'), {
   loading: () => <LoadingState type="map" message="Loading map..." />
 })
 
-const VoiceSearch = dynamic(() => import('@/components/search/VoiceSearch'), {
-  ssr: false,
-  loading: () => <div className="h-16 bg-gray-800 rounded-lg animate-pulse" />
-})
-
-const FacialSearchComponent = dynamic(() => import('@/components/ai/FacialSearchComponent'), {
-  ssr: false,
-  loading: () => <LoadingState type="ai" message="Loading AI search..." />
-})
 
 const Timeline3D = dynamic(() => import('@/components/visualization/Timeline3D'), {
   ssr: false,
@@ -61,8 +51,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-  // Removed activeView state - only showing map view now
   const [selectedPerson, setSelectedPerson] = useState<MissingPerson | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showAllCases, setShowAllCases] = useState(false)
@@ -104,18 +92,6 @@ export default function Home() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
-    // Save to recent searches if it's a meaningful search
-    if (value.length > 2 && !recentSearches.includes(value)) {
-      setRecentSearches(prev => [value, ...prev].slice(0, 5))
-    }
-  }
-
-  // Voice search handler
-  const handleVoiceSearch = (query: string) => {
-    setSearchQuery(query)
-    if (!recentSearches.includes(query)) {
-      setRecentSearches(prev => [query, ...prev].slice(0, 5))
-    }
   }
 
   // Person selection handler
@@ -271,35 +247,6 @@ export default function Home() {
             )}
           </Card>
 
-          {/* AI Facial Search - MOVED UP */}
-          <Card className="mb-8 bg-gradient-to-br from-purple-900/20 via-gray-800 to-purple-900/20 border-purple-500/30 shadow-2xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-3">
-                <div className="p-2 bg-purple-600/20 rounded-lg">
-                  🤖
-                </div>
-                <span className="bg-gradient-to-r from-purple-300 to-white bg-clip-text text-transparent">
-                  AI Facial Recognition Search
-                </span>
-                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">
-                  Premium Feature
-                </span>
-              </CardTitle>
-              <p className="text-gray-400 text-sm mt-2">
-                Upload a photo to search for similar faces in our missing persons database using advanced AI technology
-              </p>
-            </CardHeader>
-            <CardContent>
-              <FacialSearchComponent 
-                missingPersons={personsData}
-                onResultsFound={(results) => {
-                  // Handle facial search results
-                  console.log('Facial search results:', results)
-                }}
-              />
-            </CardContent>
-          </Card>
-
           {/* Enhanced Search Section - STREAMLINED */}
           <Card className="mb-8 p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700/50">
             <CardHeader className="pb-4">
@@ -313,20 +260,28 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Text Search */}
-              <EnhancedSearch
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search by name, location, or keywords..."
-                recentSearches={recentSearches}
-              />
+              {/* Simple Search Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  🔍
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search by name, location, or keywords..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
-              {/* Voice Search - Compact */}
-              <VoiceSearch
-                onSearchQuery={handleVoiceSearch}
-                placeholder="Try voice search: 'Find missing children in California'"
-              />
-              
               {/* Filters Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <select
