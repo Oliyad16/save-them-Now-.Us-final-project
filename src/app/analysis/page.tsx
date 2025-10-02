@@ -254,7 +254,7 @@ export default function Analysis() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 2 + index * 0.1 }}
                   >
-                    <Card className={`p-6 ${getRiskBg(area.riskLevel)}`} hoverable>
+                    <Card className={`p-6 ${getRiskBg(area.riskLevel)} hover:-translate-y-0.5 transition-transform`}>
                       <CardContent>
                         <div className="flex justify-between items-start mb-4">
                           <div>

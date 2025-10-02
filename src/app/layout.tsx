@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import AuthSessionProvider from '@/components/SessionProvider'
 import ServiceWorkerProvider from '@/components/ServiceWorkerProvider'
+import { ClientErrorBoundary } from '@/components/ClientErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,8 +11,13 @@ export const metadata: Metadata = {
   title: 'SaveThemNow.Jesus - Missing Persons Awareness',
   description: 'Helping locate missing persons across the United States',
   manifest: '/manifest.json',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: '#000000',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
 export default function RootLayout({
@@ -30,11 +36,13 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon-192x192.png" />
       </head>
       <body className={inter.className}>
-        <ServiceWorkerProvider>
-          <AuthSessionProvider>
-            {children}
-          </AuthSessionProvider>
-        </ServiceWorkerProvider>
+        <ClientErrorBoundary>
+          <ServiceWorkerProvider>
+            <AuthSessionProvider>
+              {children}
+            </AuthSessionProvider>
+          </ServiceWorkerProvider>
+        </ClientErrorBoundary>
       </body>
     </html>
   )

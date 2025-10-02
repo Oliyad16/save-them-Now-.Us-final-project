@@ -46,14 +46,146 @@
 
 /* Tooltip styling */
 .leaflet-tooltip {
-  background: #1f2937 !important;
-  border: 1px solid #4b5563 !important;
+  background: rgba(17, 24, 39, 0.95) !important;
+  border: 1px solid #374151 !important;
   border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
+  padding: 8px 12px !important;
+  backdrop-filter: blur(8px);
 }
 
 .leaflet-tooltip-top:before {
-  border-top-color: #1f2937 !important;
+  border-top-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+.leaflet-tooltip-bottom:before {
+  border-bottom-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+/* Custom tooltip styling */
+.custom-tooltip {
+  background: rgba(17, 24, 39, 0.95) !important;
+  border: 1px solid #374151 !important;
+}
+
+/* Density tooltip for danger zones */
+.density-tooltip {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 2px solid #ef4444 !important;
+  border-radius: 50% !important;
+  padding: 8px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
+}
+
+.density-tooltip::before {
+  display: none !important;
+}
+
+/* Enhanced density tooltip with danger levels */
+.density-tooltip-enhanced {
+  background: rgba(0, 0, 0, 0.95) !important;
+  border: 3px solid rgba(239, 68, 68, 0.8) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  box-shadow:
+    0 0 30px rgba(239, 68, 68, 0.7),
+    0 0 60px rgba(239, 68, 68, 0.4) !important;
+  backdrop-filter: blur(8px) !important;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.density-tooltip-enhanced::before {
+  display: none !important;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 30px rgba(239, 68, 68, 0.7),
+      0 0 60px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 40px rgba(239, 68, 68, 0.9),
+      0 0 80px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* Pulse animation for high danger zones */
+.pulse-zone {
+  animation: pulse-circle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-circle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+/* Beautiful cluster tooltip */
+.cluster-tooltip {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(30, 41, 59, 0.98)) !important;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 12px 16px !important;
+  box-shadow:
+    0 10px 40px rgba(139, 92, 246, 0.4),
+    0 0 20px rgba(236, 72, 153, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.cluster-tooltip::before {
+  display: none !important;
+}
+
+/* Smaller cluster tooltip */
+.cluster-tooltip-small {
+  background: rgba(17, 24, 39, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  box-shadow:
+    0 4px 12px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.cluster-tooltip-small::before {
+  display: none !important;
+}
+
+/* Cluster glow animation */
+.cluster-glow {
+  animation: cluster-pulse 3s ease-in-out infinite;
+}
+
+@keyframes cluster-pulse {
+  0%, 100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* Improve marker visibility */
+.missing-persons-map .leaflet-interactive {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.missing-persons-map .leaflet-interactive:hover {
+  filter: brightness(1.2);
 }
 
 /* Digital counter effects */

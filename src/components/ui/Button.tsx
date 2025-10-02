@@ -55,6 +55,39 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps & MotionProps>(
       tier: 'shadow-tier'
     }[variant] : ''
 
+    // Use regular button if no motion props to avoid server/client boundary issues
+    if (!props.whileHover && !props.whileTap && !props.initial && !props.animate && !props.exit) {
+      return (
+        <button
+          ref={ref}
+          className={cn(
+            baseClasses,
+            variants[variant],
+            sizes[size],
+            glowClasses,
+            loading && 'cursor-wait',
+            'hover:scale-[1.02] active:scale-[0.98]',
+            className
+          )}
+          disabled={disabled || loading}
+          {...(props as any)}
+        >
+          {loading ? (
+            <>
+              <motion.div
+                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              Loading...
+            </>
+          ) : (
+            children
+          )}
+        </button>
+      )
+    }
+
     return (
       <motion.button
         ref={ref}
@@ -74,7 +107,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps & MotionProps>(
       >
         {loading ? (
           <>
-            <motion.div 
+            <motion.div
               className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}

@@ -333,11 +333,12 @@ export function BadgeShowcase({
                   getRarityGlow(rarity)
                 )}
               >
-                <Card 
-                  hoverable 
+                <div
                   className={cn(
-                    'cursor-pointer transition-all duration-200 hover:scale-105',
-                    badge.unlocked ? 'border-mission-primary/50' : 'border-mission-gray-700'
+                    'cursor-pointer transition-all duration-200 hover:scale-105 hover:-translate-y-0.5',
+                    'rounded-lg overflow-hidden',
+                    badge.unlocked ? 'border border-mission-primary/50' : 'border border-mission-gray-700',
+                    'bg-mission-gray-900'
                   )}
                   onClick={() => handleBadgeClick(badge)}
                 >
@@ -393,7 +394,7 @@ export function BadgeShowcase({
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </div>
 
                 {/* New badge indicator */}
                 {badge.unlocked && badge.unlockedAt && 

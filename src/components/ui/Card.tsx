@@ -12,14 +12,14 @@ interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, keyof Mot
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps & MotionProps>(
-  ({ 
-    className, 
+  ({
+    className,
     variant = 'default',
     tier,
     glow = false,
     hoverable = false,
     children,
-    ...props 
+    ...props
   }, ref) => {
     const variants = {
       default: 'bg-mission-gray-900 border border-mission-gray-800',
@@ -36,6 +36,25 @@ const Card = forwardRef<HTMLDivElement, CardProps & MotionProps>(
       hero: 'shadow-[0_0_20px_rgba(245,158,11,0.5)]',
       champion: 'shadow-glow-red'
     }[tier] : ''
+
+    // Use regular div for simple cards to avoid server/client boundary issues
+    if (!props.initial && !props.animate && !props.transition && !props.whileHover && !props.whileTap) {
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            'rounded-lg overflow-hidden',
+            variants[variant],
+            tierGlow,
+            hoverable && 'transition-all duration-200 hover:shadow-lg hover:border-mission-gray-700 hover:-translate-y-0.5',
+            className
+          )}
+          {...(props as any)}
+        >
+          {children}
+        </div>
+      )
+    }
 
     return (
       <motion.div

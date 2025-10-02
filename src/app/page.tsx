@@ -25,9 +25,9 @@ const KidnappingCounter = dynamic(() => import('@/components/KidnappingCounter')
 })
 
 // Dynamically import components to avoid SSR issues
-const VirtualizedMap = dynamic(() => import('@/components/map/VirtualizedMap'), {
+const MultiViewMap = dynamic(() => import('@/components/map/MultiViewMap'), {
   ssr: false,
-  loading: () => <LoadingState type="map" message="Loading advanced map..." />
+  loading: () => <LoadingState type="map" message="Loading map..." />
 })
 
 const VoiceSearch = dynamic(() => import('@/components/search/VoiceSearch'), {
@@ -62,14 +62,14 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [activeView, setActiveView] = useState<'map' | 'timeline' | 'heatmap' | 'ai'>('map')
+  // Removed activeView state - only showing map view now
   const [selectedPerson, setSelectedPerson] = useState<MissingPerson | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showAllCases, setShowAllCases] = useState(false)
 
   // Use advanced caching for API calls
   const { data: missingPersons, loading, error } = useApiCache<{data: MissingPerson[]}>('/api/missing-persons', {
-    limit: 1000 // Reduce initial load, implement pagination later
+    limit: 1500 // Load 1500 cases for comprehensive visualization
   }, {
     ttl: 1000 * 60 * 10, // 10 minutes cache
     background: true
@@ -136,8 +136,12 @@ export default function Home() {
   }
 
   const handleReportInformation = (person: MissingPerson) => {
-    // TODO: Implement reporting functionality
-    alert(`Report information about ${person.name}:\n\nContact local authorities at 911 or call the National Missing Persons hotline at 1-800-THE-LOST`)
+    // Open reporting modal or navigate to report page
+    // For now, set modal state to show reporting info
+    setSelectedPerson(person)
+    setIsModalOpen(true)
+    // TODO: Create dedicated reporting form/modal
+    console.log(`Reporting information for ${person.name}`)
   }
 
   const handleViewAllCases = () => {
@@ -184,38 +188,27 @@ export default function Home() {
                   {filteredPersons.length} cases displayed
                 </span>
               </p>
-              {/* View Selector */}
+              {/* View Selector - Temporarily hiding non-functional views */}
               <div className="flex flex-wrap gap-2 mt-4">
                 <button
-                  onClick={() => setActiveView('map')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeView === 'map'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white cursor-default"
                 >
                   🗺️ Interactive Map
                 </button>
+                {/* Heatmap and Timeline views disabled until fully functional
                 <button
                   onClick={() => setActiveView('heatmap')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeView === 'heatmap'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
                 >
-                  🔥 Heat Map
+                  🔥 Heat Map (Coming Soon)
                 </button>
                 <button
                   onClick={() => setActiveView('timeline')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeView === 'timeline'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
                 >
-                  📅 3D Timeline
+                  📅 3D Timeline (Coming Soon)
                 </button>
+                */}
               </div>
             </CardHeader>
             
@@ -239,10 +232,10 @@ export default function Home() {
                         🔄 Retry Loading
                       </button>
                       <button
-                        onClick={() => setActiveView('map')}
+                        onClick={() => window.location.reload()}
                         className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
                       >
-                        View Cached Data
+                        Try Again
                       </button>
                     </div>
                   </div>
@@ -268,39 +261,11 @@ export default function Home() {
                 )}
                 
                 {!loading && (
-                  <>
-                    {activeView === 'map' && (
-                      <VirtualizedMap 
-                        persons={filteredPersons}
-                        onPersonSelect={handlePersonSelect}
-                        className="w-full rounded-lg overflow-hidden"
-                        maxMarkers={1000}
-                        clusterDistance={0.01}
-                      />
-                    )}
-                    
-                    {activeView === 'heatmap' && (
-                      <HeatMapCanvas
-                        persons={filteredPersons}
-                        width={800}
-                        height={600}
-                        onRegionSelect={(region) => {
-                          console.log('Heat map region selected:', region)
-                          // Could show regional details modal
-                        }}
-                        className="w-full"
-                      />
-                    )}
-                    
-                    {activeView === 'timeline' && (
-                      <Timeline3D
-                        persons={filteredPersons}
-                        onPersonSelect={handlePersonSelect}
-                        height={600}
-                        className="w-full"
-                      />
-                    )}
-                  </>
+                  <MultiViewMap
+                    persons={filteredPersons}
+                    onPersonSelect={handleViewDetails}
+                    className="w-full"
+                  />
                 )}
               </CardContent>
             )}
@@ -441,10 +406,9 @@ export default function Home() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredPersons.slice(0, 6).map((person) => (
-                  <Card 
-                    key={person.id} 
-                    className="p-4 hover:border-mission-gray-600 transition-all duration-200 cursor-pointer group"
-                    hoverable
+                  <Card
+                    key={person.id}
+                    className="p-4 hover:border-mission-gray-600 transition-all duration-200 cursor-pointer group hover:-translate-y-0.5"
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
@@ -498,10 +462,9 @@ export default function Home() {
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                       {filteredPersons.slice(6).map((person) => (
-                        <Card 
-                          key={person.id} 
-                          className="p-4 hover:border-mission-gray-600 transition-all duration-200 cursor-pointer group"
-                          hoverable
+                        <Card
+                          key={person.id}
+                          className="p-4 hover:border-mission-gray-600 transition-all duration-200 cursor-pointer group hover:-translate-y-0.5"
                         >
                           <div className="space-y-3">
                             <div className="flex items-start justify-between">

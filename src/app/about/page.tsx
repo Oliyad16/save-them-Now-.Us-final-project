@@ -110,7 +110,7 @@ export default function About() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
                 >
-                  <Card className="p-6 h-full" hoverable>
+                  <Card className="p-6 h-full hover:-translate-y-0.5 transition-transform">
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{item.icon}</span>
