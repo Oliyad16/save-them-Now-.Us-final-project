@@ -5,6 +5,7 @@ import {
   getDoc, 
   addDoc, 
   updateDoc, 
+  setDoc,
   deleteDoc, 
   query, 
   where, 
@@ -57,6 +58,7 @@ export interface MissingPersonData {
 }
 
 export interface UserData {
+  id?: string
   email: string
   name: string
   tier?: string
@@ -307,12 +309,33 @@ export class UsersService {
 
   async create(data: UserData) {
     try {
-      const userData = {
-        ...data,
-        tier: data.tier || 'free',
-        emailVerified: data.emailVerified || false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      if (!isFirestoreAvailable()) {
+        throw new Error('Firestore is not available')
+      }
+
+      const { id, ...rest } = data
+      const now = new Date()
+      const userData: Omit<UserData, 'id'> & { createdAt: Date | Timestamp; updatedAt: Date } = {
+        ...rest,
+        tier: rest.tier || 'free',
+        emailVerified: rest.emailVerified || false,
+        createdAt: rest.createdAt || now,
+        updatedAt: now
+      }
+
+      if (id) {
+        const userRef = doc(db, this.collectionName, id)
+        const existing = await getDoc(userRef)
+
+        if (existing.exists()) {
+          const existingData = existing.data() as Record<string, unknown>
+          userData.createdAt = (existingData?.createdAt as Date | Timestamp) || userData.createdAt
+          await setDoc(userRef, userData, { merge: true })
+        } else {
+          await setDoc(userRef, userData)
+        }
+
+        return { id, ...userData }
       }
 
       const docRef = await addDoc(collection(db, this.collectionName), userData)
@@ -325,12 +348,17 @@ export class UsersService {
 
   async update(id: string, data: Partial<UserData>) {
     try {
+      if (!isFirestoreAvailable()) {
+        throw new Error('Firestore is not available')
+      }
+
       const updateData = {
         ...data,
         updatedAt: new Date()
       }
 
-      await updateDoc(doc(db, this.collectionName, id), updateData)
+      const userRef = doc(db, this.collectionName, id)
+      await setDoc(userRef, updateData, { merge: true })
       return { id, ...updateData }
     } catch (error) {
       console.error('Error updating user:', error)

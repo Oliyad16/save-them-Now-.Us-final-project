@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import { firebaseAuth } from './firebase-auth'
 import { usersService } from '@/lib/firestore/services'
 import { getDatabase } from '@/lib/database/connection'
+import { adminAuth, adminDb } from '@/lib/firebase/admin'
 import bcrypt from 'bcryptjs'
 
 // Flag to determine auth strategy
@@ -17,17 +18,74 @@ export const hybridAuthConfig: NextAuthOptions = {
       name: 'Email and Password',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        idToken: { label: 'Firebase ID Token', type: 'text' },
+        provider: { label: 'Auth Provider', type: 'text' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
         try {
+          const idToken = credentials?.idToken as string | undefined
+          const provider = credentials?.provider as string | undefined
+          const email = credentials?.email as string | undefined
+          const password = credentials?.password as string | undefined
+
+          if (useFirebaseAuth && idToken) {
+            if (!adminAuth) {
+              console.error('Firebase Admin SDK not configured; cannot verify ID token')
+              return null
+            }
+
+            const decodedToken = await adminAuth.verifyIdToken(idToken)
+            const userRecord = await adminAuth.getUser(decodedToken.uid)
+
+            if (adminDb) {
+              try {
+                const userRef = adminDb.collection('users').doc(userRecord.uid)
+                const now = new Date()
+                const existing = await userRef.get()
+
+                if (existing.exists) {
+                  await userRef.set({
+                    email: userRecord.email || decodedToken.email,
+                    name: userRecord.displayName || decodedToken.name || userRecord.email || 'User',
+                    emailVerified: userRecord.emailVerified || decodedToken.email_verified || false,
+                    updatedAt: now,
+                    lastLogin: now
+                  }, { merge: true })
+                } else {
+                  await userRef.set({
+                    email: userRecord.email || decodedToken.email,
+                    name: userRecord.displayName || decodedToken.name || userRecord.email || 'User',
+                    emailVerified: userRecord.emailVerified || decodedToken.email_verified || false,
+                    createdAt: now,
+                    updatedAt: now,
+                    lastLogin: now,
+                    tier: 'free'
+                  })
+                }
+              } catch (dbError) {
+                console.error('Failed to upsert Firestore user during Google sign-in:', dbError)
+              }
+            }
+
+            return {
+              id: userRecord.uid,
+              email: userRecord.email || decodedToken.email || null,
+              name: userRecord.displayName || decodedToken.name || userRecord.email || undefined,
+              emailVerified: userRecord.emailVerified || decodedToken.email_verified || false,
+              image: userRecord.photoURL || decodedToken.picture || undefined,
+              firebaseIdToken: idToken,
+              firebaseProvider: provider || decodedToken.firebase?.sign_in_provider || 'google'
+            }
+          }
+
+          if (!email || !password) {
+            return null
+          }
+
           if (useFirebaseAuth) {
             // Use Firebase Auth
-            const firebaseUser = await firebaseAuth.signIn(credentials.email, credentials.password)
+            const firebaseUser = await firebaseAuth.signIn(email, password)
             
             return {
               id: firebaseUser.uid,
@@ -41,13 +99,13 @@ export const hybridAuthConfig: NextAuthOptions = {
             const db = getDatabase()
             const user = db.prepare(
               'SELECT id, email, password_hash, name, tier, email_verified FROM users WHERE email = ?'
-            ).get(credentials.email) as any
+            ).get(email) as any
 
             if (!user || !user.password_hash) {
               return null
             }
 
-            const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash)
+            const isPasswordValid = await bcrypt.compare(password, user.password_hash)
             
             if (!isPasswordValid) {
               return null
@@ -100,8 +158,9 @@ export const hybridAuthConfig: NextAuthOptions = {
           if (!existingUser) {
             // Create new user in Firestore
             await usersService.create({
+              id: (user as any).id || (profile as any)?.sub,
               email: user.email!,
-              name: user.name!,
+              name: user.name || user.email!,
               emailVerified: true,
               createdAt: new Date()
             })
@@ -119,6 +178,9 @@ export const hybridAuthConfig: NextAuthOptions = {
         (session.user as any).tier = token.tier as string;
         (session.user as any).emailVerified = token.emailVerified as boolean
       }
+      if (token.firebaseToken) {
+        (session as any).firebaseToken = token.firebaseToken
+      }
       return session
     },
 
@@ -127,14 +189,17 @@ export const hybridAuthConfig: NextAuthOptions = {
         token.id = user.id
         token.tier = (user as any).tier || 'free'
         token.emailVerified = (user as any).emailVerified || false
+        if ((user as any).firebaseIdToken) {
+          token.firebaseToken = (user as any).firebaseIdToken
+        }
       }
 
-      // Add Firebase ID token if available
-      if (account?.provider === 'credentials' && useFirebaseAuth) {
+      // Add Firebase ID token if available when signing in with email/password
+      if (!token.firebaseToken && account?.provider === 'credentials' && useFirebaseAuth) {
         try {
-          const idToken = await firebaseAuth.getIdToken()
-          if (idToken) {
-            token.firebaseToken = idToken
+          const refreshedToken = await firebaseAuth.getIdToken()
+          if (refreshedToken) {
+            token.firebaseToken = refreshedToken
           }
         } catch (error) {
           console.warn('Failed to get Firebase ID token:', error)

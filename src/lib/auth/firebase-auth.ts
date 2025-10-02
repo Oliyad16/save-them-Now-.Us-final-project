@@ -29,7 +29,12 @@ export class FirebaseAuthService {
       
       // Update last login in Firestore
       try {
-        await usersService.update(user.uid, { lastLogin: new Date() })
+        await usersService.update(user.uid, {
+          lastLogin: new Date(),
+          email: user.email || email,
+          name: user.displayName || email,
+          emailVerified: user.emailVerified
+        })
       } catch (error) {
         console.warn('Failed to update last login:', error)
       }
@@ -57,6 +62,7 @@ export class FirebaseAuthService {
       // Create user document in Firestore
       try {
         await usersService.create({
+          id: user.uid,
           email: user.email!,
           name: displayName,
           emailVerified: user.emailVerified,

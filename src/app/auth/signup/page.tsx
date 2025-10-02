@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { signIn } from 'next-auth/react'
 import { firebaseAuth } from '@/lib/auth/firebase-auth'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth } from '@/lib/firebase/config'
@@ -22,9 +23,8 @@ export default function SignUp() {
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   
-  // Check if Google OAuth is configured
-  const isGoogleConfigured = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && 
-                             process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID !== 'your-google-client-id'
+  // Google sign-up is available when Firebase Auth is initialized
+  const isGoogleConfigured = !!auth
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -54,7 +54,7 @@ export default function SignUp() {
 
     try {
       // Use Firebase Authentication
-      const user = await firebaseAuth.signUp(formData.email, formData.password, formData.name)
+      await firebaseAuth.signUp(formData.email, formData.password, formData.name)
       
       // Success - show success message and auto redirect after a few seconds
       setSuccess(true)
@@ -75,21 +75,31 @@ export default function SignUp() {
     setError('')
     
     try {
-      // Use NextAuth with Google provider
-      const { signIn } = await import('next-auth/react')
-      const result = await signIn('google', {
+      if (!auth) {
+        throw new Error('Google sign-up is not available. Please contact support.')
+      }
+
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      const idToken = await result.user.getIdToken()
+
+      const response = await signIn('credentials', {
+        idToken,
+        provider: 'google',
         callbackUrl: '/profile',
         redirect: false
       })
 
-      if (result?.ok) {
-        router.push('/profile')
-        router.refresh()
-      } else if (result?.error) {
-        setError('Google sign-up failed. Please try again.')
+      if (response?.error) {
+        throw new Error(response.error)
       }
+
+      router.push(response?.url ?? '/profile')
+      router.refresh()
     } catch (err: any) {
+      console.error('Google sign-up failed:', err)
       setError(err.message || 'Google sign-up failed. Please try again.')
+      await firebaseAuth.signOut().catch(() => null)
     } finally {
       setLoading(false)
     }
