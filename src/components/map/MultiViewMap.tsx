@@ -194,12 +194,11 @@ export default function MultiViewMap({
         scrollWheelZoom={true}
         className="missing-persons-map"
       >
-        {/* Dark tile layer for better visibility */}
+        {/* Dark theme map tiles - using CartoDB Dark Matter (free, no auth) */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
-          maxZoom={19}
+          maxZoom={20}
         />
 
         {/* STANDARD VIEW - Individual markers */}

@@ -64,8 +64,8 @@ export interface UserData {
   tier?: string
   zipCode?: string
   emailVerified?: boolean
-  createdAt?: Date
-  lastLogin?: Date
+  createdAt?: Date | Timestamp
+  lastLogin?: Date | Timestamp
 }
 
 export interface DonationData {
@@ -79,7 +79,7 @@ export interface DonationData {
   stripePaymentIntentId?: string
   receiptSent?: boolean
   taxReceiptId?: string
-  createdAt?: Date
+  createdAt?: Date | Timestamp
 }
 
 export interface SubscriptionData {
@@ -88,11 +88,11 @@ export interface SubscriptionData {
   status: string
   stripeSubscriptionId?: string
   stripeCustomerId?: string
-  currentPeriodStart?: Date
-  currentPeriodEnd?: Date
+  currentPeriodStart?: Date | Timestamp
+  currentPeriodEnd?: Date | Timestamp
   cancelAtPeriodEnd?: boolean
-  createdAt?: Date
-  updatedAt?: Date
+  createdAt?: Date | Timestamp
+  updatedAt?: Date | Timestamp
 }
 
 /**

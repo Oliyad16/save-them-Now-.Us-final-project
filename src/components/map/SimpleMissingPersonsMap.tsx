@@ -76,12 +76,11 @@ export default function SimpleMissingPersonsMap({
         scrollWheelZoom={true}
         className="missing-persons-map"
       >
-        {/* Dark tile layer for better visibility */}
+        {/* Dark theme map - CartoDB Dark Matter (free, no auth) */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
-          maxZoom={19}
+          maxZoom={20}
         />
 
         {/* Render markers for all persons with coordinates */}

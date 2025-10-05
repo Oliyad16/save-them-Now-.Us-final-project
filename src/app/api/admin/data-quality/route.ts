@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase/admin'
 import { missingPersonsService } from '@/lib/firestore/services'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // Dynamic imports to avoid build-time issues
 const getDataSourceManager = async () => {
   try {
